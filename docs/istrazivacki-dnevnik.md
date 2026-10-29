@@ -1,4 +1,5 @@
 Nedelja 1
+
 21.10.2026 - 27.10.2026.
 
 Analiziran je projektni zadatak i definisane su četiri faze nastavnog procesa: dizajn nastave, kreiranje sadržaja, izvođenje nastave i evaluacija.
