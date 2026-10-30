@@ -1,14 +1,15 @@
-#Nedelja 1
+Nedelja 1
 
-##21.10.2026 - 27.10.2026.
+21.10.2026 - 27.10.2026.
 
 Analiziran je projektni zadatak i definisane su četiri faze nastavnog procesa: dizajn nastave, kreiranje sadržaja, izvođenje nastave i evaluacija.
 Razmatrane su uloge AI agenata u svakoj fazi i započeta je analiza naučne literature.
 Sledeći korak: detaljnije istraživanje arhitektura multiagentskih sistema, kao i identifikacija agenata po fazama nastavnog procesa.
 
 
-#Nedelja 2
-##28.10.2026 - 03.11.2026.
+Nedelja 2
+
+28.10.2026 - 03.11.2026.
 
 28.10.2026. – Identifikovani su agenti za sve četiri faze nastavnog procesa, definisane njihove uloge, ulazni i izlazni podaci. Organizovana je dokumentacija i postavljeni su istraživački materijali na GitHub repozitorijum.
 
