@@ -37,6 +37,15 @@ Detaljnije istraživanje **arhitektura multiagentskih sistema**, kao i identifik
 - Definisane su glavne komponente: **generički engine, Agent Registry, glavni orkestrator i fazni orkestratori**.
 - Kao početni izbor za orkestraciju predložen je **LangGraph**.
 
-### Sledeći korak
+---
 
-Detaljnija razrada predložene arhitekture i početak implementacije **jednostavnog prototipa** za registraciju, povezivanje i izvršavanje agenata.
+## Nedelja 3
+
+**Period:** 04.11.2026 – 10.11.2026.
+
+### Realizovane aktivnosti
+
+**08.11.2026. – Ispravljanje arhietkture i agenata po fazama**
+
+- Identifikovane su sugestije koje je profesor rekao na terminu vezbi
+- Ispravljen spisak agenata po fazama kao i slika arhitekture sistema
