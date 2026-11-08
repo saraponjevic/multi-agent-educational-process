@@ -25,6 +25,3 @@ The system is organized into four main phases:
 
 This repository contains research notes, literature reviews, key concepts, methodology, development progress, and implementation code.
 
-## Current Status
-
-The project is currently in the research and planning phase.
