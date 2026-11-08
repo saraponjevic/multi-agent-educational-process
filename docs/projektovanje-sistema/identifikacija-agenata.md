@@ -20,12 +20,12 @@ Predstavljeni agenti čine **početni katalog planiranih komponenti**. U prvoj i
 - Izlaz: Uporedna analiza tema i ishoda učenja.
 
 **4. Agent za identifikaciju kompetencija**
-- Zadatak: Definiše znanja i veštine koje učenici treba da steknu.
+- Zadatak: Definiše znanja i veštine koje učenici treba da steknu, oslanjajući se na rezultate analize postojećih kurikuluma.
 - Ulaz: Obrazovne potrebe, analiza kurikuluma.
 - Izlaz: Lista kompetencija.
 
-**5. Agent za definisanje nastavnih ciljeva**
-- Zadatak: Formuliše merljive ciljeve učenja.
+**5. Agent za definisanje nastavnih ishoda**
+- Zadatak: Formuliše merljive nastavne ishode, tj. šta tačno učenik treba da uradi ili isporuči da bi pokazao da je cilj ostvaren (npr. „napravi Angular aplikaciju").
 - Ulaz: Kompetencije, predznanje.
 - Izlaz: Nastavni ciljevi sa ID-jevima i kognitivnim nivoima.
 
@@ -34,34 +34,39 @@ Predstavljeni agenti čine **početni katalog planiranih komponenti**. U prvoj i
 - Ulaz: Nastavni ciljevi, kompetencije.
 - Izlaz: Strukturisan nastavni plan.
 
-**7. Agent za planiranje evaluacije**
-- Zadatak: Definiše načine provere ostvarenosti nastavnih ciljeva.
-- Ulaz: Nastavni ciljevi.
-- Izlaz: Plan evaluacije po ciljevima.
+**7. Agent za definisanje pokazatelja ostvarenosti ishoda**
+- Zadatak: Za svaki nastavni ishod eksplicitno definiše šta se smatra pokazateljem da je ishod ostvaren (šta učenik isporučuje ili demonstrira). Ne definiše konkretan način provere, jer se on određuje kasnije, pri izradi testova (Faza 4).
+- Ulaz: Nastavni ishodi.
+- Izlaz: Pokazatelji ostvarenosti po ishodima.
 
 **8. Agent za validaciju kurikuluma**
 - Zadatak: Proverava potpunost, strukturu i konzistentnost kurikuluma.
 - Ulaz: Generisani kurikulum.
 - Izlaz: Izveštaj o validaciji.
 
-**Rezultat faze:** Strukturisan i validiran kurikulum sa nastavnim ciljevima i planom evaluacije.
+**9. Agent za generisanje dokumentacije kurikuluma**
+- Zadatak: Priprema dokumentaciju kurikuluma (opis kursa, kompetencije, ishodi, nastavni plan, pokazatelji ostvarenosti).
+- Ulaz: Validiran kurikulum, nastavni ishodi, nastavni plan.
+- Izlaz: Dokumentacija kurikuluma.
+
+**Rezultat faze:** Strukturisan, validiran i dokumentovan kurikulum sa nastavnim ishodima i pokazateljima njihove ostvarenosti.
 
 ## Faza 2 – Kreiranje nastavnih sadržaja
 
-**1. Agent za izbor instrukcione strategije**
+**1. Agent za generisanje lekcija**
+- Zadatak: Kreira teorijska objašnjenja nastavnih jedinica.
+- Ulaz: Nastavni ciljevi, teme, nivo učenika.
+- Izlaz: Tekst lekcije.
+
+**2. Agent za izbor instrukcione strategije**
 - Zadatak: Bira odgovarajući način podučavanja.
 - Ulaz: Kurikulum, profil učenika.
 - Izlaz: Predlog instrukcione strategije.
 
-**2. Agent za planiranje nastavnih aktivnosti**
+**3. Agent za planiranje nastavnih aktivnosti**
 - Zadatak: Planira aktivnosti nastavnika i učenika.
 - Ulaz: Nastavni ciljevi, instrukciona strategija.
 - Izlaz: Plan nastavnih aktivnosti.
-
-**3. Agent za generisanje lekcija**
-- Zadatak: Kreira teorijska objašnjenja nastavnih jedinica.
-- Ulaz: Nastavni ciljevi, teme, nivo učenika.
-- Izlaz: Tekst lekcije.
 
 **4. Agent za generisanje primera**
 - Zadatak: Kreira primere za objašnjenje koncepata.
@@ -78,22 +83,17 @@ Predstavljeni agenti čine **početni katalog planiranih komponenti**. U prvoj i
 - Ulaz: Zadaci.
 - Izlaz: Predložena referentna rešenja.
 
-**7. Agent za proveru tačnosti materijala**
-- Zadatak: Proverava ispravnost objašnjenja, primera i rešenja.
-- Ulaz: Nastavni materijali, referentni izvori.
-- Izlaz: Izveštaj o uočenim greškama.
-
-**8. Agent za proveru kvaliteta materijala**
+**7. Agent za proveru kvaliteta materijala**
 - Zadatak: Procenjuje jasnoću, potpunost i prilagođenost sadržaja.
 - Ulaz: Nastavni materijali, kriterijumi kvaliteta.
 - Izlaz: Ocena kvaliteta i preporuke.
 
-**9. Agent za formatiranje i eksport**
+**8. Agent za formatiranje i eksport**
 - Zadatak: Pretvara sadržaj u odgovarajući format.
 - Ulaz: Pripremljeni materijali, željeni format.
 - Izlaz: PDF, Markdown ili HTML dokument.
 
-**10. Agent za organizaciju i distribuciju materijala**
+**9. Agent za organizaciju i distribuciju materijala**
 - Zadatak: Organizuje materijale po nastavnim jedinicama i priprema ih za korišćenje.
 - Ulaz: Materijali, nastavni plan.
 - Izlaz: Organizovana kolekcija materijala.
@@ -124,22 +124,27 @@ Moguće je kreirati više instanci učenika sa različitim nivoima predznanja: p
 - Ulaz: Odgovori i interakcije učenika.
 - Izlaz: Ažurirano stanje znanja.
 
-**5. Agent za prilagođavanje nastave**
-- Zadatak: Predlaže prilagođavanje objašnjenja i zadataka.
-- Ulaz: Stanje znanja učenika, nastavne aktivnosti.
-- Izlaz: Predlog prilagođavanja nastave.
-
-**6. Agent za upravljanje učionicom (Classroom Controller)**
+**5. Agent za upravljanje učionicom (Classroom Controller)**
 - Zadatak: Upravlja redosledom interakcija u simulaciji.
 - Ulaz: Nastavni scenario, trenutno stanje simulacije.
 - Izlaz: Sledeća aktivnost ili učesnik.
 
-**7. Agent za praćenje nastavnih aktivnosti**
+**6. Agent za praćenje nastavnih aktivnosti**
 - Zadatak: Beleži tok simulacije i aktivnosti učesnika.
 - Ulaz: Interakcije nastavnika i učenika.
 - Izlaz: Zapis nastavnog procesa.
 
-**Rezultat faze:** Simuliran nastavni proces sa zapisanim interakcijama i procenjenim stanjem znanja učenika.
+**7. Agent za proveru tačnosti materijala**
+- Zadatak: Proverava ispravnost objašnjenja, primera i rešenja koja se koriste u realizaciji nastave.
+- Ulaz: Nastavni materijali, odgovori nastavnika, referentni izvori.
+- Izlaz: Izveštaj o uočenim greškama.
+
+**8. Agent za izveštavanje o realizaciji nastave**
+- Zadatak: Priprema izveštaj o toku nastave i stanju znanja učenika.
+- Ulaz: Zapis nastavnog procesa, stanje znanja učenika.
+- Izlaz: Izveštaj o realizaciji nastave.
+
+**Rezultat faze:** Simuliran nastavni proces sa zapisanim interakcijama i procenjenim stanjem znanja učenika i izveštajem o realizaciji.
 
 ## Faza 4 – Evaluacija nastavnog procesa
 
@@ -163,27 +168,32 @@ Moguće je kreirati više instanci učenika sa različitim nivoima predznanja: p
 - Ulaz: Nastavni ciljevi, rezultati evaluacije.
 - Izlaz: Procena ostvarenosti ciljeva.
 
-**5. Agent za proveru usklađenosti**
-- Zadatak: Proverava povezanost ciljeva, materijala, aktivnosti i testova.
-- Ulaz: Kurikulum, materijali, testovi.
-- Izlaz: Izveštaj o usklađenosti i nedostacima.
+**5. Agent za adaptivno prilagođavanje nastave**
+- Zadatak: Na osnovu stanja znanja i rezultata evaluacije predlaže prilagođavanje objašnjenja i zadataka.
+- Ulaz: Stanje znanja učenika, rezultati evaluacije.
+- Izlaz: Predlog prilagođavanja nastave.
 
-**6. Agent za evaluaciju kvaliteta (Evaluator Agent)**
+**6. Agent za evaluaciju celokupnog kurikuluma**
+- Zadatak: Evaluira kurikulum kao celinu, uključujući povezanost ishoda, materijala, aktivnosti i testova.
+- Ulaz: Kurikulum, materijali, testovi.
+- Izlaz: Izveštaj o evaluaciji kurikuluma, usklađenosti i nedostacima.
+
+**7. Agent za evaluaciju kvaliteta (Evaluator Agent)**
 - Zadatak: Procenjuje kvalitet nastavnog procesa prema definisanim kriterijumima.
 - Ulaz: Kurikulum, materijali, rezultati simulacije.
 - Izlaz: Ocena kvaliteta i obrazloženje.
 
-**7. Agent za optimizaciju (Optimizer Agent)**
+**8. Agent za optimizaciju (Optimizer Agent)**
 - Zadatak: Predlaže unapređenja nastavnog procesa.
 - Ulaz: Rezultati evaluacije, identifikovani problemi.
 - Izlaz: Predlog korekcija.
 
-**8. Agent za upravljanje povratnom spregom**
+**9. Agent za upravljanje povratnom spregom**
 - Zadatak: Određuje koje prethodne aktivnosti treba ponoviti.
 - Ulaz: Predložene korekcije.
 - Izlaz: Zahtev za ponovno izvršavanje odgovarajućeg agenta.
 
-**9. Agent za generisanje izveštaja**
+**10. Agent za generisanje izveštaja**
 - Zadatak: Formira završni izveštaj o rezultatima i kvalitetu nastave.
 - Ulaz: Rezultati evaluacije, analize i korekcije.
 - Izlaz: Završni izveštaj.
