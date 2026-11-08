@@ -45,7 +45,7 @@ Detaljnije istraživanje **arhitektura multiagentskih sistema**, kao i identifik
 
 ### Realizovane aktivnosti
 
-**08.11.2026. – Ispravljanje arhietkture i agenata po fazama**
+**08.11.2026. – Ispravljanje arhitekture i agenata po fazama**
 
 - Identifikovane su sugestije koje je profesor rekao na terminu vezbi
 - Ispravljen spisak agenata po fazama kao i slika arhitekture sistema
