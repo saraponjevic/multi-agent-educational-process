@@ -22,3 +22,4 @@ class EducationState(TypedDict, total=False):
     current_phase: str                             # u kojoj smo fazi
     results: Annotated[dict, merge_dicts]          # izlazi svih agenata: {agent_id: {...}}
     log: Annotated[dict, merge_dicts]              # evidencija izvršavanja (vreme, status, greške)
+    abort: Annotated[dict, merge_dicts]            # ako nije prazno: rad je prekinut zbog greške {agent: greska}

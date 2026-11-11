@@ -4,7 +4,7 @@ GLAVNI PROGRAM - pokretanje celog sistema.
     python main.py              -> pokreni ceo nastavni proces
     python main.py --list       -> samo prikazi registrovane agente
     python main.py --graph      -> sacuvaj dijagram grafa (docs/graph.md)
-    python main.py --course "Uvod u baze podataka"
+    python main.py --course "Osnove SQL upita"   -> druga tema (inace se cita config/course.yaml)
 """
 import argparse
 import json
@@ -12,6 +12,9 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+import yaml
+
+from engine import llm
 from engine.orchestrator import build_main_graph
 from engine.registry import AgentRegistry
 
@@ -26,14 +29,20 @@ except Exception:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--course", default="Uvod u masinsko ucenje")
+    parser.add_argument("--course", help="tema kursa (ako se ne navede, cita se iz config/course.yaml)")
     parser.add_argument("--list", action="store_true")
     parser.add_argument("--graph", action="store_true")
+    parser.add_argument("--test-llm", action="store_true", help="samo jedan probni poziv modela")
     args = parser.parse_args()
+
+    if args.test_llm:
+        llm.test_connection()
+        return
 
     # 1) ENGINE: ucitaj sve agente iz config fajla
     registry = AgentRegistry(ROOT / "config" / "agents.yaml")
     registry.print_summary()
+    print(llm.describe())
     if args.list:
         return
 
@@ -49,12 +58,18 @@ def main():
         return
 
     # 3) POKRENI ceo nastavni proces
+    course = yaml.safe_load((ROOT / "config" / "course.yaml").read_text(encoding="utf-8"))
+    if args.course:
+        course["topic"] = args.course
+    print(f"Kurs koji se simulira: {course['topic']}")
+
     initial_state = {
-        "course": {"topic": args.course, "target_group": "studenti 3. godine"},
+        "course": course,
         "settings": registry.settings,
         "iteration": 0,
         "results": {},
         "log": {},
+        "abort": {},
     }
     final_state = graph.invoke(initial_state, config={"recursion_limit": 100})
 
@@ -64,13 +79,19 @@ def main():
     out_file = out_dir / f"run_{datetime.now():%Y%m%d_%H%M%S}.json"
     out_file.write_text(json.dumps(final_state, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    errors = [v for v in final_state["log"].values() if v["status"] != "ok"]
+    errors = [v for v in final_state["log"].values() if v["status"] == "error"]
+    skipped = [v for v in final_state["log"].values() if v["status"] == "skipped"]
     print("\n================ KRAJ ================")
     print(f"Pokrenuto agenata (ukupno poziva): {len(final_state['log'])}")
     print(f"Broj dorada (povratna sprega):     {final_state['iteration']}")
     print(f"Greske:                            {len(errors)}")
     for e in errors:
-        print(f"   - {e['agent']}: {e['error']}")
+        print(f"   - {e['agent']}: {str(e['error'])[:200]}")
+    if skipped:
+        print(f"Preskoceno agenata (zbog prekida): {len(skipped)}")
+    report = final_state["results"].get("final_report", {}).get("summary")
+    if report:
+        print(f"Zavrsni izvestaj:                  {report}")
     print(f"Ceo rezultat sacuvan u:            {out_file.relative_to(ROOT)}")
 
 

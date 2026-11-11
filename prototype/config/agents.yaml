@@ -5,8 +5,8 @@
 #  Engine pri pokretanju čita ovaj fajl i sam pravi LangGraph graf.
 #
 #  Da dodaš novog agenta:
-#    1. napiši Python funkciju u folderu agents/
-#    2. dodaj blok ispod (id, faza, korak, funkcija)
+#    1. napravi fajl agents/<faza>/<ime_agenta>.py sa funkcijom run(data)
+#    2. dodaj blok ispod (id, faza, korak, function: "agents.<faza>.<ime_agenta>")
 #    3. pokreni ponovo:  python main.py
 #  Nigde drugde ne moraš ništa da menjaš.
 #
@@ -18,8 +18,9 @@
 # =====================================================================
 
 settings:
-  max_feedback_iterations: 2   # koliko puta najviše evaluacija može vratiti tok nazad
+  max_feedback_iterations: 1   # koliko puta najviše evaluacija može vratiti tok nazad (svaka dorada = još LLM poziva)
   quality_threshold: 75        # ispod ove ocene evaluator traži doradu
+  stop_on_error: true          # ako agent pukne, prekini rad (ne trosi LLM kvotu uzalud)
 
 phases:
   - id: curriculum_design
@@ -33,50 +34,50 @@ phases:
 
 agents:
 
-  # -------------------- Faza 1 - Dizajn kurikuluma (9 agenata) --------------------
+  # ---------------- Faza 1 - Dizajn kurikuluma (9 agenata) ----------------
   - id: needs_analysis
     name: "Agent za analizu obrazovnih potreba"
     phase: curriculum_design
     step: 1
     type: local
-    function: "agents.phase1_curriculum:needs_analysis"
+    function: "agents.phase1_curriculum.needs_analysis"
 
   - id: prior_knowledge_analysis
     name: "Agent za analizu predznanja"
     phase: curriculum_design
     step: 1
     type: local
-    function: "agents.phase1_curriculum:prior_knowledge_analysis"
+    function: "agents.phase1_curriculum.prior_knowledge_analysis"
 
   - id: existing_curricula_analysis
     name: "Agent za analizu postojecih kurikuluma"
     phase: curriculum_design
     step: 1
     type: local
-    function: "agents.phase1_curriculum:existing_curricula_analysis"
+    function: "agents.phase1_curriculum.existing_curricula_analysis"
 
   - id: competency_identification
     name: "Agent za identifikaciju kompetencija"
     phase: curriculum_design
     step: 2
     type: local
-    function: "agents.phase1_curriculum:competency_identification"
+    function: "agents.phase1_curriculum.competency_identification"
     requires: [needs_analysis, existing_curricula_analysis]
 
-  - id: learning_outcomes
+  - id: learning_outcomes   # KLJUCNI (LLM)
     name: "Agent za definisanje nastavnih ishoda"
     phase: curriculum_design
     step: 3
     type: local
-    function: "agents.phase1_curriculum:learning_outcomes"
+    function: "agents.phase1_curriculum.learning_outcomes"
     requires: [competency_identification, prior_knowledge_analysis]
 
-  - id: curriculum_structure
+  - id: curriculum_structure   # KLJUCNI (LLM)
     name: "Agent za strukturiranje nastavnog plana"
     phase: curriculum_design
     step: 4
     type: local
-    function: "agents.phase1_curriculum:curriculum_structure"
+    function: "agents.phase1_curriculum.curriculum_structure"
     requires: [learning_outcomes, competency_identification]
 
   - id: achievement_indicators
@@ -84,7 +85,7 @@ agents:
     phase: curriculum_design
     step: 4
     type: local
-    function: "agents.phase1_curriculum:achievement_indicators"
+    function: "agents.phase1_curriculum.achievement_indicators"
     requires: [learning_outcomes]
 
   - id: curriculum_validation
@@ -92,7 +93,7 @@ agents:
     phase: curriculum_design
     step: 5
     type: local
-    function: "agents.phase1_curriculum:curriculum_validation"
+    function: "agents.phase1_curriculum.curriculum_validation"
     requires: [curriculum_structure, achievement_indicators, learning_outcomes]
 
   - id: curriculum_documentation
@@ -100,25 +101,26 @@ agents:
     phase: curriculum_design
     step: 6
     type: local
-    function: "agents.phase1_curriculum:curriculum_documentation"
+    function: "agents.phase1_curriculum.curriculum_documentation"
     requires: [curriculum_validation, learning_outcomes, curriculum_structure]
 
 
-  # -------------------- Faza 2 - Kreiranje nastavnih sadrzaja (9 agenata) --------------------
-  - id: lesson_generator
+  # ---------------- Faza 2 - Kreiranje nastavnih sadrzaja (9 agenata) ----------------
+  - id: lesson_generator   # KLJUCNI (LLM)
     name: "Agent za generisanje lekcija"
     phase: content_creation
     step: 1
     type: local
-    function: "agents.phase2_content:lesson_generator"
+    function: "agents.phase2_content.lesson_generator"
     requires: [curriculum_structure, learning_outcomes]
+    optional: [optimizer]
 
   - id: instructional_strategy
     name: "Agent za izbor instrukcione strategije"
     phase: content_creation
     step: 1
     type: local
-    function: "agents.phase2_content:instructional_strategy"
+    function: "agents.phase2_content.instructional_strategy"
     requires: [curriculum_structure, prior_knowledge_analysis]
 
   - id: activity_planning
@@ -126,7 +128,7 @@ agents:
     phase: content_creation
     step: 2
     type: local
-    function: "agents.phase2_content:activity_planning"
+    function: "agents.phase2_content.activity_planning"
     requires: [learning_outcomes, instructional_strategy]
 
   - id: example_generator
@@ -134,15 +136,15 @@ agents:
     phase: content_creation
     step: 2
     type: local
-    function: "agents.phase2_content:example_generator"
+    function: "agents.phase2_content.example_generator"
     requires: [lesson_generator, learning_outcomes]
 
-  - id: exercise_generator
+  - id: exercise_generator   # KLJUCNI (LLM)
     name: "Agent za generisanje zadataka"
     phase: content_creation
     step: 2
     type: local
-    function: "agents.phase2_content:exercise_generator"
+    function: "agents.phase2_content.exercise_generator"
     requires: [learning_outcomes, lesson_generator]
 
   - id: exercise_solver
@@ -150,7 +152,7 @@ agents:
     phase: content_creation
     step: 3
     type: local
-    function: "agents.phase2_content:exercise_solver"
+    function: "agents.phase2_content.exercise_solver"
     requires: [exercise_generator]
 
   - id: material_quality_check
@@ -158,7 +160,7 @@ agents:
     phase: content_creation
     step: 4
     type: local
-    function: "agents.phase2_content:material_quality_check"
+    function: "agents.phase2_content.material_quality_check"
     requires: [lesson_generator, example_generator, exercise_generator, exercise_solver, activity_planning]
 
   - id: formatting_export
@@ -166,7 +168,7 @@ agents:
     phase: content_creation
     step: 5
     type: local
-    function: "agents.phase2_content:formatting_export"
+    function: "agents.phase2_content.formatting_export"
     requires: [material_quality_check]
 
   - id: material_organization
@@ -174,17 +176,17 @@ agents:
     phase: content_creation
     step: 6
     type: local
-    function: "agents.phase2_content:material_organization"
+    function: "agents.phase2_content.material_organization"
     requires: [formatting_export, curriculum_structure]
 
 
-  # -------------------- Faza 3 - Realizacija nastave (8 agenata; ucenik ima 3 instance) --------------------
+  # ---------------- Faza 3 - Realizacija nastave (8 agenata; ucenik ima 3 instance) ----------------
   - id: teaching_scenario
     name: "Agent za pripremu nastavnog scenarija"
     phase: teaching
     step: 1
     type: local
-    function: "agents.phase3_teaching:teaching_scenario"
+    function: "agents.phase3_teaching.teaching_scenario"
     requires: [curriculum_structure, material_organization]
 
   - id: classroom_controller
@@ -192,53 +194,50 @@ agents:
     phase: teaching
     step: 2
     type: local
-    function: "agents.phase3_teaching:classroom_controller"
+    function: "agents.phase3_teaching.classroom_controller"
     requires: [teaching_scenario]
 
-  - id: teacher
+  - id: teacher   # KLJUCNI (LLM)
     name: "Agent nastavnik (Teaching Agent)"
     phase: teaching
     step: 3
     type: local
-    function: "agents.phase3_teaching:teacher"
+    function: "agents.phase3_teaching.teacher"
     requires: [teaching_scenario, lesson_generator, classroom_controller]
 
-  - id: student_beginner
-    name: "Agent ucenik - pocetni nivo"
+  - id: student_beginner   # KLJUCNI (LLM)
+    name: "Agent ucenik - pocetni nivo (na casu)"
     phase: teaching
     step: 4
     type: local
-    function: "agents.phase3_teaching:student"
+    function: "agents.phase3_teaching.student"
     requires: [teacher]
-    params:
-      level: beginner
+    params: {level: beginner, mode: class}
 
-  - id: student_intermediate
-    name: "Agent ucenik - srednji nivo"
+  - id: student_intermediate   # KLJUCNI (LLM)
+    name: "Agent ucenik - srednji nivo (na casu)"
     phase: teaching
     step: 4
     type: local
-    function: "agents.phase3_teaching:student"
+    function: "agents.phase3_teaching.student"
     requires: [teacher]
-    params:
-      level: intermediate
+    params: {level: intermediate, mode: class}
 
-  - id: student_advanced
-    name: "Agent ucenik - napredni nivo"
+  - id: student_advanced   # KLJUCNI (LLM)
+    name: "Agent ucenik - napredni nivo (na casu)"
     phase: teaching
     step: 4
     type: local
-    function: "agents.phase3_teaching:student"
+    function: "agents.phase3_teaching.student"
     requires: [teacher]
-    params:
-      level: advanced
+    params: {level: advanced, mode: class}
 
   - id: knowledge_state
     name: "Agent za upravljanje stanjem znanja ucenika"
     phase: teaching
     step: 5
     type: local
-    function: "agents.phase3_teaching:knowledge_state"
+    function: "agents.phase3_teaching.knowledge_state"
     requires: [student_beginner, student_intermediate, student_advanced]
 
   - id: activity_tracking
@@ -246,7 +245,7 @@ agents:
     phase: teaching
     step: 5
     type: local
-    function: "agents.phase3_teaching:activity_tracking"
+    function: "agents.phase3_teaching.activity_tracking"
     requires: [teacher, student_beginner, student_intermediate, student_advanced]
 
   - id: material_accuracy_check
@@ -254,7 +253,7 @@ agents:
     phase: teaching
     step: 5
     type: local
-    function: "agents.phase3_teaching:material_accuracy_check"
+    function: "agents.phase3_teaching.material_accuracy_check"
     requires: [teacher, lesson_generator]
 
   - id: teaching_report
@@ -262,92 +261,119 @@ agents:
     phase: teaching
     step: 6
     type: local
-    function: "agents.phase3_teaching:teaching_report"
+    function: "agents.phase3_teaching.teaching_report"
     requires: [activity_tracking, knowledge_state, material_accuracy_check]
 
 
-  # -------------------- Faza 4 - Evaluacija i unapredjenje (10 agenata) --------------------
-  - id: test_generator
+  # ---------------- Faza 4 - Evaluacija i unapredjenje (10 agenata + ucenici rade test) ----------------
+  - id: test_generator   # KLJUCNI (LLM)
     name: "Agent za generisanje testova"
     phase: evaluation
     step: 1
     type: local
-    function: "agents.phase4_evaluation:test_generator"
-    requires: [curriculum_structure, learning_outcomes]
+    function: "agents.phase4_evaluation.test_generator"
+    requires: [learning_outcomes, curriculum_structure, lesson_generator]
 
-  # EKSTERNI AGENT: da bi ovaj agent radio preko HTTP API-ja,
-  # pokreni  python external_agent/server.py  i promeni  type: local  ->  type: remote_http
-  - id: answer_grader
-    name: "Agent za ocenjivanje odgovora"
+  - id: student_test_beginner   # KLJUCNI (LLM)
+    name: "Agent ucenik - pocetni nivo (radi test)"
     phase: evaluation
     step: 2
     type: local
-    function: "agents.phase4_evaluation:answer_grader"
-    requires: [test_generator, exercise_solver, student_beginner, student_intermediate, student_advanced]
+    function: "agents.phase3_teaching.student"
+    requires: [test_generator, teacher]
+    params: {level: beginner, mode: test}
+
+  - id: student_test_intermediate   # KLJUCNI (LLM)
+    name: "Agent ucenik - srednji nivo (radi test)"
+    phase: evaluation
+    step: 2
+    type: local
+    function: "agents.phase3_teaching.student"
+    requires: [test_generator, teacher]
+    params: {level: intermediate, mode: test}
+
+  - id: student_test_advanced   # KLJUCNI (LLM)
+    name: "Agent ucenik - napredni nivo (radi test)"
+    phase: evaluation
+    step: 2
+    type: local
+    function: "agents.phase3_teaching.student"
+    requires: [test_generator, teacher]
+    params: {level: advanced, mode: test}
+
+  # EKSTERNI AGENT: da bi ovaj agent radio preko HTTP API-ja,
+  # pokreni  python external_agent/server.py  i promeni  type: local  ->  type: remote_http
+  - id: answer_grader   # KLJUCNI (LLM)
+    name: "Agent za ocenjivanje odgovora"
+    phase: evaluation
+    step: 3
+    type: local
+    function: "agents.phase4_evaluation.answer_grader"
+    requires: [test_generator, student_test_beginner, student_test_intermediate, student_test_advanced]
     endpoint: "http://127.0.0.1:8001/run"   # koristi se samo kad je type: remote_http
-    timeout_seconds: 10
+    timeout_seconds: 60
 
   - id: error_analysis
     name: "Agent za analizu gresaka ucenika"
     phase: evaluation
-    step: 3
+    step: 4
     type: local
-    function: "agents.phase4_evaluation:error_analysis"
+    function: "agents.phase4_evaluation.error_analysis"
     requires: [answer_grader]
 
   - id: objective_achievement
     name: "Agent za analizu ostvarenosti nastavnih ciljeva"
     phase: evaluation
-    step: 3
+    step: 4
     type: local
-    function: "agents.phase4_evaluation:objective_achievement"
+    function: "agents.phase4_evaluation.objective_achievement"
     requires: [learning_outcomes, answer_grader]
 
   - id: adaptive_adjustment
     name: "Agent za adaptivno prilagodjavanje nastave"
     phase: evaluation
-    step: 4
+    step: 5
     type: local
-    function: "agents.phase4_evaluation:adaptive_adjustment"
+    function: "agents.phase4_evaluation.adaptive_adjustment"
     requires: [knowledge_state, objective_achievement]
 
   - id: curriculum_evaluation
     name: "Agent za evaluaciju celokupnog kurikuluma"
     phase: evaluation
-    step: 4
+    step: 5
     type: local
-    function: "agents.phase4_evaluation:curriculum_evaluation"
+    function: "agents.phase4_evaluation.curriculum_evaluation"
     requires: [curriculum_documentation, material_organization, test_generator]
 
   - id: quality_evaluator
     name: "Agent za evaluaciju kvaliteta (Evaluator Agent)"
     phase: evaluation
-    step: 4
+    step: 5
     type: local
-    function: "agents.phase4_evaluation:quality_evaluator"
-    requires: [curriculum_structure, material_quality_check, teaching_report]
+    function: "agents.phase4_evaluation.quality_evaluator"
+    requires: [answer_grader, material_quality_check, teaching_report]
 
   - id: optimizer
     name: "Agent za optimizaciju (Optimizer Agent)"
     phase: evaluation
-    step: 5
+    step: 6
     type: local
-    function: "agents.phase4_evaluation:optimizer"
-    requires: [quality_evaluator, error_analysis, curriculum_evaluation, adaptive_adjustment]
+    function: "agents.phase4_evaluation.optimizer"
+    requires: [quality_evaluator, answer_grader, error_analysis, curriculum_evaluation, adaptive_adjustment]
 
   - id: feedback_manager
     name: "Agent za upravljanje povratnom spregom"
     phase: evaluation
-    step: 6
+    step: 7
     type: local
-    function: "agents.phase4_evaluation:feedback_manager"
+    function: "agents.phase4_evaluation.feedback_manager"
     requires: [optimizer, quality_evaluator]
 
   - id: final_report
     name: "Agent za generisanje zavrsnog izvestaja"
     phase: evaluation
-    step: 7
+    step: 8
     type: local
-    function: "agents.phase4_evaluation:final_report"
-    requires: [quality_evaluator, objective_achievement, optimizer, feedback_manager]
+    function: "agents.phase4_evaluation.final_report"
+    requires: [feedback_manager, answer_grader, quality_evaluator]
 

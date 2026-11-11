@@ -1,0 +1,27 @@
+# =====================================================================
+#  KURS KOJI SE SIMULIRA  (studija slucaja)
+# ---------------------------------------------------------------------
+#  Ovo je ULAZ u ceo sistem. Agenti su opsti - rade za bilo koju temu.
+#  Kada sa profesorom izaberes konacnu oblast, menjas SAMO ovaj fajl.
+#
+#  Brza promena teme bez menjanja fajla:
+#     python main.py --course "Osnove SQL upita"
+# =====================================================================
+
+topic: "Uvod u klasifikaciju (masinsko ucenje)"
+target_group: "studenti 3. godine informatike"
+language: "srpski jezik, latinica"
+num_units: 2                      # koliko nastavnih jedinica / casova
+requirements: "kratak uvodni kurs; akcenat na razumevanju pojma i jednom prakticnom primeru"
+
+# Profili simuliranih ucenika (Agent ucenik ih koristi da bi "glumio" taj nivo)
+student_profiles:
+  beginner: >
+    Pocetnik. Zna osnove programiranja, ali nikad nije radio masinsko ucenje.
+    Cesto brka klasifikaciju i regresiju, nesiguran je i daje kratke, delimicno netacne odgovore.
+  intermediate: >
+    Srednji nivo. Cuo je za masinsko ucenje i razume osnovnu ideju,
+    ali greska u detaljima (npr. podela na trening i test skup, metrike).
+  advanced: >
+    Napredni. Vec je samostalno trenirao jednostavne modele.
+    Odgovara tacno i precizno, ponekad postavlja dublja pitanja.

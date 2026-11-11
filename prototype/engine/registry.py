@@ -19,11 +19,12 @@ class AgentSpec:
     phase: str
     step: int
     type: str = "local"                  # "local" ili "remote_http"
-    function: str | None = None          # npr. "agents.phase1_curriculum:needs_analysis"
+    function: str | None = None          # npr. "agents.phase1_curriculum.needs_analysis:run"
     endpoint: str | None = None          # za eksterne agente
     timeout_seconds: float = 30
     capabilities: list = field(default_factory=list)
-    requires: list = field(default_factory=list)
+    requires: list = field(default_factory=list)       # ulazi koji MORAJU da postoje
+    optional: list = field(default_factory=list)       # ulazi koji mogu, ali ne moraju da postoje
     params: dict = field(default_factory=dict)
     enabled: bool = True
     callable: object = None              # učitana Python funkcija (popunjava se automatski)
@@ -76,7 +77,7 @@ class AgentRegistry:
 
         # Upozori ako agent zavisi od nekog ko ne postoji / nije uključen
         for a in self.agents.values():
-            for dep in a.requires:
+            for dep in a.requires + a.optional:
                 if dep not in self.agents:
                     self.warnings.append(
                         f"Agent '{a.id}' ocekuje rezultat od '{dep}', ali taj agent nije registrovan/ukljucen."
@@ -84,9 +85,10 @@ class AgentRegistry:
 
     @staticmethod
     def _import_function(spec: AgentSpec):
-        """'agents.phase1_curriculum:needs_analysis' -> prava Python funkcija."""
+        """'agents.phase1_curriculum.needs_analysis:run' -> prava Python funkcija."""
         try:
-            module_name, func_name = spec.function.split(":")
+            module_name, _, func_name = spec.function.partition(":")
+            func_name = func_name or "run"
             module = importlib.import_module(module_name)
             return getattr(module, func_name)
         except Exception as e:

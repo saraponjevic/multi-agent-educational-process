@@ -33,7 +33,7 @@ def build_inputs(spec: AgentSpec, state: dict) -> dict:
         "iteration": state.get("iteration", 0),
         "settings": state.get("settings", {}),
         "params": spec.params,
-        "inputs": {dep: results.get(dep) for dep in spec.requires},
+        "inputs": {dep: results.get(dep) for dep in spec.requires + spec.optional},
     }
 
 
@@ -51,9 +51,18 @@ def make_agent_node(spec: AgentSpec, phase_name: str):
 
     def node(state: dict) -> dict:
         iteration = state.get("iteration", 0)
+        log_key = f"iter{iteration}|{spec.phase}|{spec.step}|{spec.id}"
+
+        # Ako je neki raniji agent pukao (i stop_on_error je ukljucen), ne trosimo vise LLM poziva
+        if state.get("abort"):
+            say(f"   - preskacem {spec.id:<28} (rad je prekinut zbog ranije greske)")
+            return {"log": {log_key: {"agent": spec.id, "phase": phase_name, "step": spec.step,
+                                      "iteration": iteration, "status": "skipped", "error": None,
+                                      "duration_s": 0, "finished_at": None}}}
+
         payload = build_inputs(spec, state)
 
-        missing = [dep for dep, val in payload["inputs"].items() if val is None]
+        missing = [dep for dep in spec.requires if payload["inputs"].get(dep) is None]
         if missing:
             say(f"   [!] {spec.id}: nedostaju ulazi od {missing} (nastavljam bez njih)")
 
@@ -75,8 +84,7 @@ def make_agent_node(spec: AgentSpec, phase_name: str):
         mark = "OK " if status == "ok" else "GRESKA"
         say(f"   < {mark:<6}    {spec.id:<28} {duration}s" + (f"  -> {error}" if error else ""))
 
-        log_key = f"iter{iteration}|{spec.phase}|{spec.step}|{spec.id}"
-        return {
+        update = {
             "results": {spec.id: output},
             "log": {
                 log_key: {
@@ -91,5 +99,9 @@ def make_agent_node(spec: AgentSpec, phase_name: str):
                 }
             },
         }
+        if status == "error" and state.get("settings", {}).get("stop_on_error", True):
+            say(f"   !!! PREKIDAM rad zbog greske u agentu '{spec.id}' (stop_on_error: true)")
+            update["abort"] = {spec.id: error}
+        return update
 
     return node

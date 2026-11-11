@@ -63,6 +63,9 @@ def build_main_graph(registry: AgentRegistry):
     max_iter = registry.settings.get("max_feedback_iterations", 2)
 
     def feedback_control(state: dict) -> dict:
+        if state.get("abort"):
+            print("\n!!! Rad je prekinut zbog greske - nema povratne sprege.")
+            return {"current_phase": "done"}
         decision = state.get("results", {}).get("feedback_manager") or {}
         it = state.get("iteration", 0)
         if decision.get("needs_rework") and it < max_iter:
