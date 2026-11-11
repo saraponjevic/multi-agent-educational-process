@@ -49,3 +49,11 @@ Detaljnije istraživanje **arhitektura multiagentskih sistema**, kao i identifik
 
 - Identifikovane su sugestije koje je profesor rekao na terminu vezbi
 - Ispravljen spisak agenata po fazama kao i slika arhitekture sistema
+
+**10.11.2026. – Početak implementacije prototipa**
+
+- Postavljeno razvojno okruženje (Python 3.13, `.venv`, LangGraph); kod smešten u folder `prototype/`.
+- Realizovan generički engine: registracija agenata preko konfiguracionog fajla (`config/agents.yaml`), pozivanje lokalnih i eksternih (HTTP) agenata, evidencija izvršavanja i obrada grešaka.
+- Realizovana orkestracija u LangGraph-u: faze se izvršavaju sekvencijalno, agenti unutar faze paralelno, a povratna sprega vraća tok na fazu 2 kada je ocena ispod praga.
+- Napravljeno svih 36 agenata kao „hello world" verzije, svaki u zasebnom fajlu.
+- Ključni agenti po fazama povezani sa jezičkim modelom (Groq, `gpt-oss-120b`): nastavni ishodi i nastavni plan, lekcije i zadaci, nastavnik i tri simulirana učenika, test i ocenjivanje.
