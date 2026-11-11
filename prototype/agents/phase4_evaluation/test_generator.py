@@ -8,6 +8,7 @@ Konstruktivno uskladjivanje: pitanja i ocekivani odgovori moraju se zasnivati
 ISKLJUCIVO na onome sto je predavano u lekcijama (inace test kaznjava ucenike
 za gradivo koje nisu ni ucili).
 """
+from agents import graph_context
 from engine.llm import ask_json, to_text
 
 SYSTEM = (
@@ -19,9 +20,13 @@ SYSTEM = (
 
 def run(data: dict) -> dict:
     course = data["course"]
-    outcomes = (data["inputs"].get("learning_outcomes") or {}).get("outcomes", [])
+    kg = data.get("kg")
     units = (data["inputs"].get("curriculum_structure") or {}).get("units", [])
-    lessons = (data["inputs"].get("lesson_generator") or {}).get("lessons", [])
+    if kg:   # ishodi i lekcije iz grafa (lekcije vec nose svoje teme i ishode)
+        outcomes, lessons = graph_context.outcomes(kg), graph_context.lessons(kg)
+    else:
+        outcomes = (data["inputs"].get("learning_outcomes") or {}).get("outcomes", [])
+        lessons = (data["inputs"].get("lesson_generator") or {}).get("lessons", [])
 
     user = f"""Kurs: {course['topic']}
 Nastavni ishodi:
@@ -44,3 +49,14 @@ Vrati JSON:
         for i, o in enumerate(outcomes)
     ]}
     return ask_json(SYSTEM, user, fallback)
+
+def write_graph(result: dict, g):
+    """GRAF:  :Test_1 :zaKurs :Kurs_... ; :imaPitanje :Pitanje_T1 .  :Pitanje_T1 :proveravaIshod :Ishod_O1 ."""
+    test = g.node("Test", "Test_1", label="Zavrsni test")
+    g.link(test, "zaKurs", g.course)
+    for q in result.get("questions", []):
+        p = g.node("Pitanje", f"Pitanje_{q['id']}", label=q.get("text"))
+        g.link(test, "imaPitanje", p)
+        g.value(p, "ocekivaniOdgovor", q.get("expected_answer"))
+        if q.get("outcome"):
+            g.link(p, "proveravaIshod", g.ref(f"Ishod_{q['outcome']}"))

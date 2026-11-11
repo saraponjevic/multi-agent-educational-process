@@ -1,0 +1,51 @@
+# =====================================================================
+#  PRAVILA ZA AGENTE (ugovori) - ko sme sta da upise u graf
+# ---------------------------------------------------------------------
+#  :kreira     -> agent sme da pravi cvorove ove klase
+#  :dopunjuje  -> agent sme da doda ovo svojstvo na cvorove drugih agenata
+#
+#  Engine (engine/knowledge_graph.py) pri svakom upisu proverava:
+#    1. da li agent pravi samo cvorove klasa koje sme (:kreira)
+#    2. da li koristi samo svojstva koja postoje u ontologiji
+#    3. da li menja tudje cvorove samo svojstvima iz :dopunjuje
+#    4. da li veze postuju domen i opseg (rdfs:domain / rdfs:range)
+#
+#  Agent koji NIJE naveden ovde ne sme nista da upise u graf.
+#  Faza kojoj agent pripada (:pripadaFazi) upisuje se automatski
+#  iz config/agents.yaml, pa se ne ponavlja ovde.
+# =====================================================================
+@prefix : <http://example.org/kurikulum#> .
+
+# ---------------- Faza 1 - Dizajn kurikuluma ----------------
+:agent_competency_identification   :kreira :Kompetencija ;
+                                   :dopunjuje :imaKompetenciju .   # Kurs -> Kompetencija
+
+:agent_learning_outcomes           :kreira :NastavniIshod ;
+                                   :dopunjuje :imaIshod .          # Kompetencija -> Ishod
+
+:agent_achievement_indicators      :dopunjuje :pokazatelj .
+
+:agent_curriculum_structure        :kreira :NastavnaJedinica , :Tema ;
+                                   :dopunjuje :imaJedinicu .       # Kurs -> Jedinica
+
+# ---------------- Faza 2 - Nastavni sadrzaji ----------------
+:agent_lesson_generator            :kreira :Lekcija .
+
+:agent_exercise_generator          :kreira :Zadatak .
+
+# ---------------- Faza 3 - Realizacija nastave --------------
+# Ucenici na casu "postaju" cvorovi grafa (isti cvor koristi i Faza 4)
+:agent_student_beginner            :kreira :Ucenik .
+:agent_student_intermediate        :kreira :Ucenik .
+:agent_student_advanced            :kreira :Ucenik .
+
+:agent_knowledge_state             :dopunjuje :nivoZnanja , :usvojioTemu .
+
+# ---------------- Faza 4 - Evaluacija -----------------------
+:agent_test_generator              :kreira :Test , :Pitanje .
+
+:agent_student_test_beginner       :kreira :Odgovor .
+:agent_student_test_intermediate   :kreira :Odgovor .
+:agent_student_test_advanced       :kreira :Odgovor .
+
+:agent_answer_grader               :dopunjuje :poeni , :obrazlozenje .

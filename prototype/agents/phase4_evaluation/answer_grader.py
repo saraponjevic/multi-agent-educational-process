@@ -13,6 +13,7 @@ Kako ocenjuje (da bi bilo objektivno):
 Napomena: ovaj agent moze da radi i kao EKSTERNI (external_agent/server.py),
 samo promenis  type: local -> type: remote_http  u config/agents.yaml.
 """
+from agents import graph_context
 from engine.llm import ask_json, to_text
 
 SYSTEM = (
@@ -28,10 +29,14 @@ MAX_POINTS = 2
 
 def run(data: dict) -> dict:
     course = data["course"]
-    questions = (data["inputs"].get("test_generator") or {}).get("questions", [])
-    # svi ulazi cije ime pocinje sa "student_test_" su odgovori ucenika na testu
-    students = {k: v.get("answers", []) for k, v in data["inputs"].items()
-                if k.startswith("student_test_") and v}
+    kg = data.get("kg")
+    if kg:   # pitanja, ocekivani odgovori i odgovori ucenika - sve iz grafa
+        questions, students = graph_context.questions(kg), graph_context.test_answers(kg)
+    else:
+        questions = (data["inputs"].get("test_generator") or {}).get("questions", [])
+        # svi ulazi cije ime pocinje sa "student_test_" su odgovori ucenika na testu
+        students = {k: v.get("answers", []) for k, v in data["inputs"].items()
+                    if k.startswith("student_test_") and v}
 
     # anonimizacija: student_test_beginner -> S1 ...
     anon = {f"S{i + 1}": sid for i, sid in enumerate(sorted(students))}
@@ -76,3 +81,14 @@ Vrati JSON:
         "average": round(sum(scores) / len(scores), 1) if scores else None,
         "_source": result.get("_source"),
     }
+
+def write_graph(result: dict, g):
+    """GRAF: dopunjuje odgovore ucenika poenima:  :Odgovor_beginner_T1 :poeni 1 ; :obrazlozenje "..." ."""
+    for sid, grade in result.get("grades", {}).items():
+        level = sid.removeprefix("student_test_")
+        for p in grade.get("points", []):
+            if not isinstance(p, dict):
+                continue
+            o = g.ref(f"Odgovor_{level}_{p.get('question_id')}")
+            g.value(o, "poeni", min(2, max(0, int(p.get("points", 0)))))
+            g.value(o, "obrazlozenje", p.get("reason"))

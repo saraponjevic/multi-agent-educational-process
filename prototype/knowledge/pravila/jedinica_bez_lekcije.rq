@@ -1,0 +1,11 @@
+# opis: Svaka nastavna jedinica mora imati lekciju.
+# odgovoran: lesson_generator
+PREFIX :     <http://example.org/kurikulum#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?cvor ?poruka WHERE {
+  ?cvor a :NastavnaJedinica .
+  FILTER NOT EXISTS { ?l a :Lekcija ; :zaJedinicu ?cvor }
+  OPTIONAL { ?cvor rdfs:label ?naziv }
+  BIND(CONCAT("Jedinica '", COALESCE(?naziv, STR(?cvor)), "' nema lekciju") AS ?poruka)
+}

@@ -1,0 +1,11 @@
+# opis: Svaki nastavni ishod mora imati pokazatelj ostvarenosti.
+# odgovoran: achievement_indicators
+PREFIX :     <http://example.org/kurikulum#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?cvor ?poruka WHERE {
+  ?cvor a :NastavniIshod .
+  FILTER NOT EXISTS { ?cvor :pokazatelj ?p }
+  OPTIONAL { ?cvor rdfs:label ?naziv }
+  BIND(CONCAT("Ishod '", COALESCE(?naziv, STR(?cvor)), "' nema pokazatelj ostvarenosti") AS ?poruka)
+}

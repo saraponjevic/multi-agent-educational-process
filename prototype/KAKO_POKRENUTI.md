@@ -16,7 +16,16 @@ python main.py                    # pokreni ceo nastavni proces
 python main.py --list             # samo prikaži registrovane agente
 python main.py --graph            # sačuvaj dijagram grafa u docs/graph.md
 python main.py --course "Osnove SQL upita"   # druga tema (inače se čita config/course.yaml)
+python main.py --no-kg            # bez grafa znanja (kao ranije)
+python kg_query.py                # SPARQL pravila nad poslednjim sačuvanim grafom
+python kg_query.py knowledge/upiti/plan_kursa.rq   # tvoj SPARQL upit
 ```
+
+## Graf znanja (Semantički veb)
+Agenti upisuju rezultate u zajednički RDF graf; engine proverava pravila iz
+`knowledge/ontologija.ttl` i `knowledge/agenti.ttl`, a kvalitet se proverava
+SPARQL pravilima iz `knowledge/pravila/`. Graf se čuva u `output/graf_*.ttl`
+(otvara se u Protégé-u), a crtež grafa u `output/graf_*.md`. Detaljno: `../semanticki-veb/graf-znanja-u-prototipu.md`.
 
 ## Dva režima rada
 | Režim | Kako | Šta se dešava |
@@ -49,7 +58,11 @@ Uključivanje LLM-a:
 | `engine/orchestrator.py` | glavni orkestrator (LangGraph): faze sekvencijalno, korak paralelno, povratna sprega |
 | `agents/<faza>/<agent>.py` | jedan fajl = jedan agent, svaki ima funkciju `run(data)` |
 | `external_agent/server.py` | primer eksternog agenta preko HTTP API-ja |
-| `output/` | evidencija svakog pokretanja (JSON) |
+| `output/` | evidencija svakog pokretanja (JSON) + graf znanja (`.ttl`, `.trig`, crtež `.md`) |
+| `knowledge/` | ontologija, pravila za agente, SPARQL pravila i primeri upita |
+| `engine/knowledge_graph.py` | zajednički graf znanja (rdflib): upis uz proveru pravila, SPARQL, čuvanje |
+| `kg_query.py` | SPARQL upiti nad sačuvanim grafom |
+| `agents/graph_context.py` | zajednički SPARQL upiti kojima agenti čitaju graf umesto teksta |
 
 ## Ključni agenti (pravi LLM)
 | Faza | Agenti |

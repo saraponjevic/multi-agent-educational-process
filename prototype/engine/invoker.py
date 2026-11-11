@@ -7,8 +7,13 @@ Poziva agenta na isti način bez obzira da li je:
 
 Takođe: meri vreme, hvata greške, proverava da li su stigli ulazi
 i sve upisuje u evidenciju (log).
+
+GRAF ZNANJA: lokalni agent dobija data["kg"] (citanje grafa SPARQL-om).
+Ako agent ima funkciju write_graph(result, g), invoker posle uspesnog rada
+prevodi njegov rezultat u cvorove grafa i upisuje ih uz proveru pravila.
 """
 import json
+import sys
 import threading
 import time
 import urllib.request
@@ -46,7 +51,24 @@ def call_remote(spec: AgentSpec, payload: dict) -> dict:
         return json.loads(resp.read().decode("utf-8"))
 
 
-def make_agent_node(spec: AgentSpec, phase_name: str):
+def write_to_graph(spec: AgentSpec, kg, output: dict, iteration: int):
+    """Ako agent ima write_graph(result, g) -> upisi njegov rezultat u graf znanja (uz proveru pravila)."""
+    if kg is None or spec.type != "local":
+        return None
+    write_graph = getattr(sys.modules[spec.callable.__module__], "write_graph", None)
+    if write_graph is None:
+        return None
+    g = kg.writer(spec.id, iteration)
+    write_graph(output, g)
+    report = kg.commit(spec.id, g)
+    msg = f"      [graf] {spec.id}: upisano {report['upisano_trojki']} trojki"
+    if report["odbijeno"]:
+        msg += f", ODBIJENO {len(report['odbijeno'])}: " + "; ".join(report["odbijeno"][:3])
+    say(msg)
+    return report
+
+
+def make_agent_node(spec: AgentSpec, phase_name: str, kg=None):
     """Pravi LangGraph čvor (funkciju) za jednog agenta."""
 
     def node(state: dict) -> dict:
@@ -68,13 +90,15 @@ def make_agent_node(spec: AgentSpec, phase_name: str):
 
         say(f"   > pokrecem  {spec.id:<28} ({spec.type})")
         start = time.perf_counter()
+        graph_report = None
         try:
             if spec.type == "local":
-                output = spec.callable(payload)
+                output = spec.callable({**payload, "kg": kg})   # lokalni agent moze da cita graf
             else:
-                output = call_remote(spec, payload)
+                output = call_remote(spec, payload)             # eksterni dobija samo JSON
             if not isinstance(output, dict):
                 raise TypeError(f"agent mora da vrati dict, a vratio je {type(output).__name__}")
+            graph_report = write_to_graph(spec, kg, output, iteration)
             status, error = "ok", None
         except Exception as e:  # agent je pukao -> ne rušimo ceo sistem
             output = {"error": str(e)}
@@ -96,6 +120,7 @@ def make_agent_node(spec: AgentSpec, phase_name: str):
                     "error": error,
                     "duration_s": duration,
                     "finished_at": datetime.now().isoformat(timespec="seconds"),
+                    "graph": graph_report,
                 }
             },
         }

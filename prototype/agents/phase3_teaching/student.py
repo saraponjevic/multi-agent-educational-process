@@ -13,6 +13,7 @@ VAZNO ZA SIMULACIJU:
     2. svaki nivo ima KONKRETNA pravila ponasanja (LEVEL_RULES ispod).
 Profil svakog nivoa (opis) nalazi se u config/course.yaml (student_profiles).
 """
+from agents import graph_context
 from engine.llm import ask_json, to_text
 
 LEVEL_RULES = {
@@ -75,11 +76,14 @@ Vrati JSON: {{"answer": "...", "question_to_teacher": "... ili prazno"}}"""
     answers = {"beginner": "Nisam siguran...", "intermediate": "Mislim da je to...",
                "advanced": "To je precizno definisan pojam koji..."}
     fallback = {"answer": answers.get(level, "?"), "question_to_teacher": ""}
-    return {"level": level, **ask_json(system, user, fallback)}
+    return {"level": level, "mode": "class", "profile": course.get("student_profiles", {}).get(level, ""),
+            **ask_json(system, user, fallback)}
 
 
 def _take_test(data, system, level, course):
-    questions = (data["inputs"].get("test_generator") or {}).get("questions", [])
+    kg = data.get("kg")
+    questions = graph_context.questions(kg) if kg else \
+        (data["inputs"].get("test_generator") or {}).get("questions", [])
     teacher = data["inputs"].get("teacher") or {}
     user = f"""Ovo je SVE sto si cuo na casu (tvoje jedino znanje o temi):
 \"\"\"{teacher.get('explanation', '')}\"\"\"
@@ -93,4 +97,24 @@ Vrati JSON: {{"answers": [{{"question_id": "T1", "answer": "..."}}]}}"""
 
     fallback = {"answers": [{"question_id": q.get("id"), "answer": f"(hello world odgovor, nivo {level})"}
                             for q in questions]}
-    return {"level": level, **ask_json(system, user, fallback)}
+    return {"level": level, "mode": "test", **ask_json(system, user, fallback)}
+
+
+def write_graph(result: dict, g):
+    """
+    GRAF:
+      na casu (Faza 3):  :Ucenik_beginner a :Ucenik ; :profil "beginner" .
+      na testu (Faza 4): :Odgovor_beginner_T1 a :Odgovor ; :odUcenika :Ucenik_beginner ;
+                                               :naPitanje :Pitanje_T1 ; :tekst "..." .
+    Isti cvor ucenika povezuje cas i test - tako se kasnije vidi ko je sta naucio.
+    """
+    level = result.get("level", "beginner")
+    if result.get("mode") == "class":
+        u = g.node("Ucenik", f"Ucenik_{level}", label=f"Simulirani ucenik ({level})")
+        g.value(u, "profil", level)
+        return
+    for a in result.get("answers", []):
+        o = g.node("Odgovor", f"Odgovor_{level}_{a.get('question_id')}")
+        g.link(o, "odUcenika", g.ref(f"Ucenik_{level}"))
+        g.link(o, "naPitanje", g.ref(f"Pitanje_{a.get('question_id')}"))
+        g.value(o, "tekst", a.get("answer"))

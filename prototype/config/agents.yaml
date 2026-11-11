@@ -368,6 +368,7 @@ agents:
     type: local
     function: "agents.phase4_evaluation.feedback_manager"
     requires: [optimizer, quality_evaluator]
+    optional: [curriculum_evaluation]     # prekrsena pravila iz grafa znanja
 
   - id: final_report
     name: "Agent za generisanje zavrsnog izvestaja"

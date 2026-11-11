@@ -1,0 +1,11 @@
+# opis: Svaki nastavni ishod mora pripadati nekoj kompetenciji.
+# odgovoran: learning_outcomes
+PREFIX :     <http://example.org/kurikulum#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?cvor ?poruka WHERE {
+  ?cvor a :NastavniIshod .
+  FILTER NOT EXISTS { ?k :imaIshod ?cvor }
+  OPTIONAL { ?cvor rdfs:label ?naziv }
+  BIND(CONCAT("Ishod '", COALESCE(?naziv, STR(?cvor)), "' nije vezan ni za jednu kompetenciju") AS ?poruka)
+}

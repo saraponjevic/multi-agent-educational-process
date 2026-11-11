@@ -1,0 +1,11 @@
+# opis: Svaki nastavni ishod mora biti proveren bar jednim pitanjem na testu (konstruktivno uskladjivanje).
+# odgovoran: test_generator
+PREFIX :     <http://example.org/kurikulum#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?cvor ?poruka WHERE {
+  ?cvor a :NastavniIshod .
+  FILTER NOT EXISTS { ?p :proveravaIshod ?cvor }
+  OPTIONAL { ?cvor rdfs:label ?naziv }
+  BIND(CONCAT("Ishod '", COALESCE(?naziv, STR(?cvor)), "' nije proveren nijednim pitanjem na testu") AS ?poruka)
+}

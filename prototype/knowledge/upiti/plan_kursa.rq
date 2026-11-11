@@ -1,0 +1,11 @@
+# Nastavni plan iz grafa: jedinica -> teme -> ishodi -> lekcija
+PREFIX :     <http://example.org/kurikulum#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?rb ?jedinica ?tema ?ishod ?lekcija WHERE {
+  ?j a :NastavnaJedinica ; :redniBroj ?rb ; rdfs:label ?jedinica .
+  OPTIONAL { ?j :sadrziTemu/rdfs:label ?tema }
+  OPTIONAL { ?j :pokrivaIshod ?ishod }
+  OPTIONAL { ?lekcija a :Lekcija ; :zaJedinicu ?j }
+}
+ORDER BY ?rb

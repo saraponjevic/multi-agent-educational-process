@@ -1,0 +1,9 @@
+# Koji ishod proverava koje pitanje (konstruktivno uskladjivanje)
+PREFIX :     <http://example.org/kurikulum#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?ishod ?nazivIshoda ?pitanje WHERE {
+  ?ishod a :NastavniIshod ; rdfs:label ?nazivIshoda .
+  OPTIONAL { ?pitanje :proveravaIshod ?ishod }
+}
+ORDER BY ?ishod

@@ -1,0 +1,10 @@
+# opis: Preduslovi tema ne smeju da prave krug (tema ne moze posredno zahtevati samu sebe).
+# odgovoran: curriculum_structure
+PREFIX :     <http://example.org/kurikulum#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?cvor ?poruka WHERE {
+  ?cvor a :Tema ; :imaPreduslov+ ?cvor .
+  OPTIONAL { ?cvor rdfs:label ?naziv }
+  BIND(CONCAT("Tema '", COALESCE(?naziv, STR(?cvor)), "' je u krugu preduslova") AS ?poruka)
+}

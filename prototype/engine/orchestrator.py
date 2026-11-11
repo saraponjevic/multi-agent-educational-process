@@ -17,7 +17,7 @@ from engine.state import EducationState
 # ----------------------------------------------------------------------
 #  PODGRAF za jednu fazu
 # ----------------------------------------------------------------------
-def build_phase_graph(registry: AgentRegistry, phase_id: str):
+def build_phase_graph(registry: AgentRegistry, phase_id: str, kg=None):
     phase_name = registry.phase_name(phase_id)
     builder = StateGraph(EducationState)
 
@@ -35,7 +35,7 @@ def build_phase_graph(registry: AgentRegistry, phase_id: str):
     previous = [start_node]
     for step in registry.steps_in_phase(phase_id):
         for agent in step:
-            builder.add_node(agent.id, make_agent_node(agent, phase_name))
+            builder.add_node(agent.id, make_agent_node(agent, phase_name, kg))
             # svaki agent iz ovog koraka čeka SVE agente iz prethodnog koraka
             builder.add_edge(previous if len(previous) > 1 else previous[0], agent.id)
         previous = [a.id for a in step]
@@ -47,13 +47,14 @@ def build_phase_graph(registry: AgentRegistry, phase_id: str):
 # ----------------------------------------------------------------------
 #  GLAVNI GRAF
 # ----------------------------------------------------------------------
-def build_main_graph(registry: AgentRegistry):
+def build_main_graph(registry: AgentRegistry, kg=None):
+    """kg = graf znanja (engine/knowledge_graph.py) koji dele svi agenti; moze i None."""
     builder = StateGraph(EducationState)
     phase_ids = [p.id for p in registry.phases]
 
     # 1) svaka faza je jedan čvor (podgraf), faze idu SEKVENCIJALNO
     for pid in phase_ids:
-        builder.add_node(pid, build_phase_graph(registry, pid))
+        builder.add_node(pid, build_phase_graph(registry, pid, kg))
 
     builder.add_edge(START, phase_ids[0])
     for a, b in zip(phase_ids, phase_ids[1:]):

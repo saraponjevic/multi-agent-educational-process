@@ -1,0 +1,11 @@
+# opis: Za svaki nastavni ishod mora postojati bar jedan zadatak za vezbanje.
+# odgovoran: exercise_generator
+PREFIX :     <http://example.org/kurikulum#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?cvor ?poruka WHERE {
+  ?cvor a :NastavniIshod .
+  FILTER NOT EXISTS { ?z a :Zadatak ; :podrzavaIshod ?cvor }
+  OPTIONAL { ?cvor rdfs:label ?naziv }
+  BIND(CONCAT("Ishod '", COALESCE(?naziv, STR(?cvor)), "' nema nijedan zadatak za vezbanje") AS ?poruka)
+}

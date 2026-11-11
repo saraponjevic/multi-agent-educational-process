@@ -1,0 +1,18 @@
+# opis: Ucenici u proseku moraju osvojiti bar polovinu poena na pitanjima za svaki ishod.
+# odgovoran: lesson_generator
+PREFIX :     <http://example.org/kurikulum#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?cvor ?poruka WHERE {
+  {
+    SELECT ?cvor (AVG(?poeni) / 2 AS ?uspeh) WHERE {
+      ?pitanje :proveravaIshod ?cvor .
+      ?odgovor :naPitanje ?pitanje ; :poeni ?poeni .
+    }
+    GROUP BY ?cvor
+  }
+  FILTER(?uspeh < 0.5)
+  OPTIONAL { ?cvor rdfs:label ?naziv }
+  BIND(CONCAT("Ishod '", COALESCE(?naziv, STR(?cvor)), "' je slabo ostvaren (uspeh ",
+              STR(ROUND(?uspeh * 100)), "%) - lekciju treba doraditi") AS ?poruka)
+}

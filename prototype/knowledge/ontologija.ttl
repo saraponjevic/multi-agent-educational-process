@@ -1,0 +1,128 @@
+# =====================================================================
+#  ONTOLOGIJA KURIKULUMA  (RDFS + OWL, Turtle zapis)
+# ---------------------------------------------------------------------
+#  Ovo je SEMA grafa znanja: koje vrste cvorova (klase) postoje
+#  i kako smeju da se povezuju (svojstva sa domenom i opsegom).
+#
+#  Agenti NE menjaju ovaj fajl. Oni upisuju konkretne cvorove
+#  (instance), a engine proverava da li postuju ovu semu.
+#
+#  Fajl moze da se otvori u Protege-u (File > Open).
+# =====================================================================
+@prefix :     <http://example.org/kurikulum#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<http://example.org/kurikulum> a owl:Ontology ;
+    rdfs:label "Ontologija kurikuluma za simulaciju nastavnog procesa" .
+
+# ---------------------------------------------------------------------
+#  KLASE
+# ---------------------------------------------------------------------
+:Kurs              a owl:Class ; rdfs:label "Kurs" .
+:Kompetencija      a owl:Class ; rdfs:label "Kompetencija" .
+:NastavniIshod     a owl:Class ; rdfs:label "Nastavni ishod" .
+:NastavnaJedinica  a owl:Class ; rdfs:label "Nastavna jedinica" .
+:Tema              a owl:Class ; rdfs:label "Tema" .
+
+:Materijal         a owl:Class ; rdfs:label "Nastavni materijal" .
+:Lekcija           a owl:Class ; rdfs:subClassOf :Materijal ; rdfs:label "Lekcija" .
+:Zadatak           a owl:Class ; rdfs:subClassOf :Materijal ; rdfs:label "Zadatak" .
+
+:Test              a owl:Class ; rdfs:label "Test" .
+:Pitanje           a owl:Class ; rdfs:label "Pitanje na testu" .
+
+:Ucenik            a owl:Class ; rdfs:label "Ucenik (simulirani)" .
+:Odgovor           a owl:Class ; rdfs:label "Odgovor ucenika na pitanje" .
+
+# Sam sistem je takodje opisan u grafu (ko je koji agent i sta sme da upisuje)
+:Agent             a owl:Class ; rdfs:label "Agent" .
+
+# Klase su medjusobno disjunktne (ishod ne moze istovremeno biti tema)
+[] a owl:AllDisjointClasses ;
+   owl:members ( :Kurs :Kompetencija :NastavniIshod :NastavnaJedinica :Tema :Materijal :Test :Pitanje :Ucenik :Odgovor :Agent ) .
+
+# ---------------------------------------------------------------------
+#  OBJEKTNA SVOJSTVA (veze izmedju cvorova)
+# ---------------------------------------------------------------------
+:imaKompetenciju a owl:ObjectProperty ;
+    rdfs:domain :Kurs ; rdfs:range :Kompetencija ;
+    rdfs:comment "Kurs razvija kompetenciju." .
+
+:imaIshod a owl:ObjectProperty ;
+    rdfs:domain :Kompetencija ; rdfs:range :NastavniIshod ;
+    rdfs:comment "Kompetencija se razlaze na nastavne ishode." .
+
+:imaJedinicu a owl:ObjectProperty ;
+    rdfs:domain :Kurs ; rdfs:range :NastavnaJedinica .
+
+:sadrziTemu a owl:ObjectProperty ;
+    rdfs:domain :NastavnaJedinica ; rdfs:range :Tema .
+
+:pokrivaIshod a owl:ObjectProperty ;
+    rdfs:domain :NastavnaJedinica ; rdfs:range :NastavniIshod ;
+    rdfs:comment "Jedinica vodi ka ostvarenju ishoda." .
+
+:imaPreduslov a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:domain :Tema ; rdfs:range :Tema ;
+    rdfs:comment "Tema zahteva prethodno usvojenu temu (tranzitivno)." .
+
+:zaJedinicu a owl:ObjectProperty ;
+    rdfs:domain :Materijal ; rdfs:range :NastavnaJedinica .
+
+:podrzavaIshod a owl:ObjectProperty ;
+    rdfs:domain :Materijal ; rdfs:range :NastavniIshod .
+
+:imaPitanje a owl:ObjectProperty ;
+    rdfs:domain :Test ; rdfs:range :Pitanje .
+
+:proveravaIshod a owl:ObjectProperty ;
+    rdfs:domain :Pitanje ; rdfs:range :NastavniIshod .
+
+:zaKurs a owl:ObjectProperty ;
+    rdfs:domain :Test ; rdfs:range :Kurs .
+
+:usvojioTemu a owl:ObjectProperty ;
+    rdfs:domain :Ucenik ; rdfs:range :Tema ;
+    rdfs:comment "Stanje znanja: ucenik je usvojio temu." .
+
+:odUcenika a owl:ObjectProperty ;
+    rdfs:domain :Odgovor ; rdfs:range :Ucenik .
+
+:naPitanje a owl:ObjectProperty ;
+    rdfs:domain :Odgovor ; rdfs:range :Pitanje .
+
+# --- svojstva koja opisuju sam sistem (pravila za agente) ---
+:kreira a owl:ObjectProperty ;
+    rdfs:domain :Agent ; rdfs:range owl:Class ;
+    rdfs:comment "Agent sme da pravi cvorove ove klase." .
+
+:dopunjuje a owl:ObjectProperty ;
+    rdfs:domain :Agent ; rdfs:range rdf:Property ;
+    rdfs:comment "Agent sme da doda ovo svojstvo na tudje cvorove." .
+
+# ---------------------------------------------------------------------
+#  SVOJSTVA PODATAKA (tekst, brojevi)
+# ---------------------------------------------------------------------
+:tekst             a owl:DatatypeProperty ; rdfs:range xsd:string .
+:nivo              a owl:DatatypeProperty ; rdfs:domain :NastavniIshod ; rdfs:range xsd:string ;
+                   rdfs:comment "Nivo po Blumovoj taksonomiji." .
+:pokazatelj        a owl:DatatypeProperty ; rdfs:domain :NastavniIshod ; rdfs:range xsd:string ;
+                   rdfs:comment "Sta ucenik konkretno pokazuje kad je ishod ostvaren." .
+:redniBroj         a owl:DatatypeProperty ; rdfs:range xsd:integer .
+:tezina            a owl:DatatypeProperty ; rdfs:domain :Zadatak ; rdfs:range xsd:string .
+:ocekivaniOdgovor  a owl:DatatypeProperty ; rdfs:domain :Pitanje ; rdfs:range xsd:string .
+:profil           a owl:DatatypeProperty ; rdfs:domain :Ucenik ; rdfs:range xsd:string ;
+                   rdfs:comment "beginner | intermediate | advanced" .
+:nivoZnanja        a owl:DatatypeProperty ; rdfs:domain :Ucenik ; rdfs:range xsd:decimal ;
+                   rdfs:comment "Procena znanja 0-1 (agent za stanje znanja)." .
+:poeni             a owl:DatatypeProperty ; rdfs:domain :Odgovor ; rdfs:range xsd:integer ;
+                   rdfs:comment "0, 1 ili 2 poena (agent za ocenjivanje)." .
+:obrazlozenje      a owl:DatatypeProperty ; rdfs:domain :Odgovor ; rdfs:range xsd:string .
+:ciljnaGrupa       a owl:DatatypeProperty ; rdfs:domain :Kurs ; rdfs:range xsd:string .
+:verzija           a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+                   rdfs:comment "Prolaz kroz povratnu spregu u kome je cvor nastao." .
+:agentId           a owl:DatatypeProperty ; rdfs:domain :Agent ; rdfs:range xsd:string .
+:pripadaFazi       a owl:DatatypeProperty ; rdfs:domain :Agent ; rdfs:range xsd:string .

@@ -8,6 +8,7 @@ Nastavnik predaje SVE nastavne jedinice (kratko), jer test u fazi 4 proverava sv
 Ono sto nastavnik ovde kaze je JEDINO znanje koje simulirani ucenici imaju.
 Kasnije (Classroom Controller): vise krugova pitanja i odgovora.
 """
+from agents import graph_context
 from engine.llm import ask_json, to_text
 
 SYSTEM = (
@@ -18,7 +19,9 @@ SYSTEM = (
 
 def run(data: dict) -> dict:
     course = data["course"]
-    lessons = (data["inputs"].get("lesson_generator") or {}).get("lessons", [])
+    kg = data.get("kg")
+    lessons = graph_context.lessons(kg) if kg else \
+        (data["inputs"].get("lesson_generator") or {}).get("lessons", [])
     scenario = (data["inputs"].get("teaching_scenario") or {}).get("scenario", [])
 
     user = f"""Drzis cas iz kursa "{course['topic']}" za: {course['target_group']}.

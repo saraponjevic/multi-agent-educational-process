@@ -1,0 +1,9 @@
+# Sve teme koje moraju da se znaju pre neke teme (i posredno: znak + = jedan ili vise koraka)
+PREFIX :     <http://example.org/kurikulum#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?tema ?preduslov WHERE {
+  ?t a :Tema ; rdfs:label ?tema ; :imaPreduslov+ ?p .
+  ?p rdfs:label ?preduslov .
+}
+ORDER BY ?tema
