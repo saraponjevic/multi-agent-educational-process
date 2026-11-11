@@ -15,9 +15,8 @@
 - [x] Nacrtati početni dijagram arhitekture.
 
 ## 4. Početna implementacija
-- [ ] Implementirati osnovni engine.
-- [ ] Napraviti jednostavne Hello World agente i testirati njihovu komunikaciju.
-- [ ] Postepeno razvijati prve funkcionalne LLM agente.
+- [x] Implementirati osnovni engine.
+- [x] Napraviti jednostavne Hello World agente i testirati njihovu komunikaciju.
+- [x] Iz svake faze razviti najbitnije agente u pocetnoj implementaciji.
 
-## 5. Dokumentacija
-- [ ] Redovno dopunjavati istraživački dnevnik i beležiti rezultate rada.
+
