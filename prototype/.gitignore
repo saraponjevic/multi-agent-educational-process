@@ -1,0 +1,10 @@
+# Python virtuelno okruzenje
+.venv/
+__pycache__/
+*.pyc
+
+# rezultati pokretanja
+output/
+
+# tajni kljucevi (kasnije za LLM)
+.env
