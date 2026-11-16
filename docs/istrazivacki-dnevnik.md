@@ -39,9 +39,9 @@ Detaljnije istraživanje **arhitektura multiagentskih sistema**, kao i identifik
 
 ---
 
-## Nedelja 3
+## Nedelja 3 i 4
 
-**Period:** 04.11.2026 – 10.11.2026.
+**Period:** 04.11.2026 – 10.11.2026; 11.11.2026 - 17.11.2026.
 
 ### Realizovane aktivnosti
 
