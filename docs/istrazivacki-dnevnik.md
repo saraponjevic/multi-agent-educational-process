@@ -57,3 +57,11 @@ Detaljnije istraživanje **arhitektura multiagentskih sistema**, kao i identifik
 - Realizovana orkestracija u LangGraph-u: faze se izvršavaju sekvencijalno, agenti unutar faze paralelno, a povratna sprega vraća tok na fazu 2 kada je ocena ispod praga.
 - Napravljeno svih 36 agenata kao „hello world" verzije, svaki u zasebnom fajlu.
 - Ključni agenti po fazama povezani sa jezičkim modelom (Groq, `gpt-oss-120b`): nastavni ishodi i nastavni plan, lekcije i zadaci, nastavnik i tri simulirana učenika, test i ocenjivanje.
+
+**10.11.2026. – Eksport nastavnih materijala**
+
+- Agent za formatiranje i eksport (faza 2) više nije hello world. Od rezultata drugih agenata pravi kurikulum.md, lekcije.md i zadaci.md (bez LLM-a).
+- Agent za generisanje završnog izveštaja (faza 4) više nije hello world. Pravi test.md (pitanja i ključ) i izvestaj.md (tok časa, ocene i odgovori učenika, odluka povratne sprege).
+- Materijali se posle svakog pokretanja čuvaju u output/materijali_<vreme>/, pored JSON evidencije.
+
+---
