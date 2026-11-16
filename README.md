@@ -15,16 +15,16 @@ The system is organized into four main phases:
 
 ## Knowledge Graphs and Retrieval-Augmented Generation (RAG)
 
-A key idea of this project is to ground the agents' work in structured knowledge rather than relying only on the internal knowledge of the language model. The educational domain (topics, concepts, learning objectives, prerequisites, and learning materials) is modeled as a **knowledge graph**, where nodes represent concepts and resources, and edges capture relationships such as *prerequisite of*, *part of*, *related to*, and *assessed by*.
+A key idea of this project is to ground the agents' work in structured knowledge, not only in the language model's internal knowledge. The educational domain is modeled as a **knowledge graph**: nodes are concepts and learning resources, and edges are relationships such as *prerequisite of* or *part of*.
 
-This graph is combined with a **Retrieval-Augmented Generation (RAG)** pipeline:
+This graph is combined with a **RAG** pipeline:
 
-- **Instructional design agents** traverse the graph to build a logical curriculum order based on concept dependencies.
-- **Content creation agents** retrieve relevant documents and graph context before generating lessons, examples, and exercises, which reduces hallucinations and keeps content consistent.
-- **Teaching agents** use the graph to adapt explanations to what the learner already knows.
-- **Evaluation agents** map assessment results back to graph nodes to identify knowledge gaps and suggest which concepts to revisit.
+- **Instructional design agents** use concept dependencies to order the curriculum.
+- **Content creation agents** retrieve relevant context before generating lessons and exercises, which reduces hallucinations.
+- **Teaching agents** adapt explanations to what the learner already knows.
+- **Evaluation agents** link assessment results to graph nodes to find knowledge gaps.
 
-The goal is to explore how graph-based retrieval (GraphRAG) can improve the accuracy, coherence, and personalization of AI-generated educational content compared to standard vector-based RAG.
+The project also explores whether graph-based retrieval (GraphRAG) gives better educational content than standard vector-based RAG.
 
 ## Project Goals
 
