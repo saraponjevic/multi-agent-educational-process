@@ -19,7 +19,8 @@
 
 settings:
   max_feedback_iterations: 1   # koliko puta najviše evaluacija može vratiti tok nazad (svaka dorada = još LLM poziva)
-  quality_threshold: 75        # ispod ove ocene evaluator traži doradu
+  quality_threshold: 60        # ispod ove ocene evaluator trazi doradu (ocena = prosek testa; pocetnik namerno
+                               # dobija ~10-30, pa bi prag 75 trazio doradu u SVAKOM pokretanju)
   stop_on_error: true          # ako agent pukne, prekini rad (ne trosi LLM kvotu uzalud)
 
 phases:
@@ -170,6 +171,8 @@ agents:
     type: local
     function: "agents.phase2_content.formatting_export"
     requires: [material_quality_check]
+    # sadrzaj koji formatira u kurikulum.md, lekcije.md, zadaci.md
+    optional: [learning_outcomes, curriculum_structure, lesson_generator, example_generator, exercise_generator, exercise_solver]
 
   - id: material_organization
     name: "Agent za organizaciju i distribuciju materijala"
@@ -377,4 +380,6 @@ agents:
     type: local
     function: "agents.phase4_evaluation.final_report"
     requires: [feedback_manager, answer_grader, quality_evaluator]
+    # sadrzaj za test.md i izvestaj.md
+    optional: [test_generator, teacher, student_beginner, student_intermediate, student_advanced, student_test_beginner, student_test_intermediate, student_test_advanced]
 

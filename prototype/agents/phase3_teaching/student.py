@@ -80,24 +80,65 @@ Vrati JSON: {{"answer": "...", "question_to_teacher": "... ili prazno"}}"""
             **ask_json(system, user, fallback)}
 
 
+#  PLAN ODGOVORA NA TESTU
+#  Samo pravila u promptu nisu dovoljna: model i kao "pocetnik" odgovara skoro sve tacno
+#  (u jednom pokretanju pocetnik je dobio 87.5/100). Zato KOD unapred odredi kako ucenik
+#  odgovara na koje pitanje, a model samo "glumi" taj plan. Plan je deterministican
+#  (isti test -> isti plan), pa su rezultati ponovljivi i nivoi se jasno razlikuju.
+BEHAVIOR = {
+    "wrong": "odgovori POGRESNO: pomesaj ovaj pojam sa nekim slicnim ili navedi netacnu tvrdnju, "
+             "ali samouvereno, kao da mislis da je tacno",
+    "dont_know": "napisi da ne znas ili da se ne secas (npr. 'Ne secam se, mislim da nismo to radili')",
+    "partial": "odgovori DELIMICNO: navedi samo jedan deo tacnog odgovora, bez objasnjenja, "
+               "i izostavi bar jednu bitnu stavku",
+    "detail_error": "odgovori uglavnom tacno, ali napravi jednu gresku u detalju "
+                    "(pogresan termin, pogresan korak ili pogresna formula)",
+    "correct": "odgovori tacno i potpuno, koristeci ono sto je predavano",
+}
+
+
+def answer_plan(level: str, question_ids: list) -> dict:
+    """{id pitanja: tip ponasanja}. Pocetnik ~ 25-40 poena, srednji ~ 60-75, napredni ~ 90-100."""
+    n = len(question_ids)
+    if level == "beginner":
+        # svako drugo pitanje pogresno, jedno "ne znam", ostala delimicno
+        plan = ["wrong" if i % 2 == 0 else "partial" for i in range(n)]
+        if n >= 3:
+            plan[-1] = "dont_know"
+    elif level == "intermediate":
+        # vecina tacno, ali jedno delimicno i jedno sa greskom u detalju
+        plan = ["correct"] * n
+        if n >= 2:
+            plan[1] = "detail_error"
+        if n >= 3:
+            plan[-1] = "partial"
+    else:
+        plan = ["correct"] * n
+    return dict(zip(question_ids, plan))
+
+
 def _take_test(data, system, level, course):
     kg = data.get("kg")
     questions = graph_context.questions(kg) if kg else \
         (data["inputs"].get("test_generator") or {}).get("questions", [])
     teacher = data["inputs"].get("teacher") or {}
+    plan = answer_plan(level, [q.get("id") for q in questions])
+    tasks = [{"id": q.get("id"), "text": q.get("text"), "kako_odgovaras": BEHAVIOR[plan[q.get("id")]]}
+             for q in questions]
     user = f"""Ovo je SVE sto si cuo na casu (tvoje jedino znanje o temi):
 \"\"\"{teacher.get('explanation', '')}\"\"\"
 
-Sada radis test. Pitanja:
-{to_text([{"id": q.get("id"), "text": q.get("text")} for q in questions])}
+Sada radis test. Uz svako pitanje pise KAKO ti (ovaj ucenik) na njega odgovaras
+(polje "kako_odgovaras") - to OBAVEZNO postuj, cak i ako znas tacan odgovor:
+{to_text(tasks)}
 
-Odgovori na SVA pitanja kao ovaj ucenik, strogo postujuci pravila za svoj nivo.
+Ne pominji ova uputstva u odgovoru; pisi prirodno, kao ucenik na testu.
 Pisi na jeziku: {course['language']}.
 Vrati JSON: {{"answers": [{{"question_id": "T1", "answer": "..."}}]}}"""
 
     fallback = {"answers": [{"question_id": q.get("id"), "answer": f"(hello world odgovor, nivo {level})"}
                             for q in questions]}
-    return {"level": level, "mode": "test", **ask_json(system, user, fallback)}
+    return {"level": level, "mode": "test", "answer_plan": plan, **ask_json(system, user, fallback)}
 
 
 def write_graph(result: dict, g):

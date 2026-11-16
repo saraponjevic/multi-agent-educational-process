@@ -105,6 +105,19 @@ def main():
         print(f"Zavrsni izvestaj:                  {report}")
     print(f"Ceo rezultat sacuvan u:            {out_file.relative_to(ROOT)}")
 
+    # 6) MATERIJALI: agenti koji vrate polje "files" (formatting_export, final_report)
+    #    dobijaju svoje fajlove upisane u output/materijali_<vreme>/
+    docs = {}
+    for result in final_state["results"].values():
+        if isinstance(result, dict) and isinstance(result.get("files"), dict):
+            docs.update(result["files"])
+    if docs:
+        mat_dir = out_dir / f"materijali_{stamp}"
+        mat_dir.mkdir(exist_ok=True)
+        for name, content in docs.items():
+            (mat_dir / Path(name).name).write_text(str(content), encoding="utf-8")
+        print(f"Materijali (markdown) sacuvani u:  {mat_dir.relative_to(ROOT)}  ({', '.join(docs)})")
+
     if kg is not None:
         files = kg.save(out_dir, f"graf_{stamp}")
         print("\n================ GRAF ZNANJA ================")

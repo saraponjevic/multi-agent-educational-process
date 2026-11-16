@@ -59,6 +59,7 @@ Uključivanje LLM-a:
 | `agents/<faza>/<agent>.py` | jedan fajl = jedan agent, svaki ima funkciju `run(data)` |
 | `external_agent/server.py` | primer eksternog agenta preko HTTP API-ja |
 | `output/` | evidencija svakog pokretanja (JSON) + graf znanja (`.ttl`, `.trig`, crtež `.md`) |
+| `output/materijali_<vreme>/` | čitljivi materijali: `kurikulum.md`, `lekcije.md`, `zadaci.md` (agent `formatting_export`), `test.md`, `izvestaj.md` (agent `final_report`) |
 | `knowledge/` | ontologija, pravila za agente, SPARQL pravila i primeri upita |
 | `engine/knowledge_graph.py` | zajednički graf znanja (rdflib): upis uz proveru pravila, SPARQL, čuvanje |
 | `kg_query.py` | SPARQL upiti nad sačuvanim grafom |
