@@ -23,3 +23,5 @@ class EducationState(TypedDict, total=False):
     results: Annotated[dict, merge_dicts]          # izlazi svih agenata: {agent_id: {...}}
     log: Annotated[dict, merge_dicts]              # evidencija izvršavanja (vreme, status, greške)
     abort: Annotated[dict, merge_dicts]            # ako nije prazno: rad je prekinut zbog greške {agent: greska}
+    students: Annotated[dict, merge_dicts]         # MEMORIJA simuliranih ucenika {id ucenika: sta zna} (traje kroz faze)
+    rounds: Annotated[dict, merge_dicts]           # petlje unutar faze: {id faze: koji je krug}

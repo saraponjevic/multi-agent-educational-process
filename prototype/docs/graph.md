@@ -73,38 +73,29 @@ graph TD;
 	teaching\3ateaching_scenario(teaching_scenario)
 	teaching\3aclassroom_controller(classroom_controller)
 	teaching\3ateacher(teacher)
-	teaching\3astudent_beginner(student_beginner)
-	teaching\3astudent_intermediate(student_intermediate)
-	teaching\3astudent_advanced(student_advanced)
+	teaching\3alearning(learning)
 	teaching\3aknowledge_state(knowledge_state)
 	teaching\3aactivity_tracking(activity_tracking)
 	teaching\3amaterial_accuracy_check(material_accuracy_check)
 	teaching\3ateaching_report(teaching_report)
+	teaching\3ateaching__petlja(teaching__petlja)
 	teaching\3aactivity_tracking --> teaching\3ateaching_report;
 	teaching\3aclassroom_controller --> teaching\3ateacher;
 	teaching\3aknowledge_state --> teaching\3ateaching_report;
+	teaching\3alearning --> teaching\3ateaching__petlja;
 	teaching\3amaterial_accuracy_check --> teaching\3ateaching_report;
-	teaching\3astudent_advanced --> teaching\3aactivity_tracking;
-	teaching\3astudent_advanced --> teaching\3aknowledge_state;
-	teaching\3astudent_advanced --> teaching\3amaterial_accuracy_check;
-	teaching\3astudent_beginner --> teaching\3aactivity_tracking;
-	teaching\3astudent_beginner --> teaching\3aknowledge_state;
-	teaching\3astudent_beginner --> teaching\3amaterial_accuracy_check;
-	teaching\3astudent_intermediate --> teaching\3aactivity_tracking;
-	teaching\3astudent_intermediate --> teaching\3aknowledge_state;
-	teaching\3astudent_intermediate --> teaching\3amaterial_accuracy_check;
-	teaching\3ateacher --> teaching\3astudent_advanced;
-	teaching\3ateacher --> teaching\3astudent_beginner;
-	teaching\3ateacher --> teaching\3astudent_intermediate;
+	teaching\3ateacher --> teaching\3alearning;
+	teaching\3ateaching__petlja -.-> teaching\3aactivity_tracking;
+	teaching\3ateaching__petlja -.-> teaching\3aknowledge_state;
+	teaching\3ateaching__petlja -.-> teaching\3amaterial_accuracy_check;
+	teaching\3ateaching__petlja -.-> teaching\3ateacher;
 	teaching\3ateaching__start --> teaching\3ateaching_scenario;
 	teaching\3ateaching_scenario --> teaching\3aclassroom_controller;
 	end
 	subgraph evaluation
 	evaluation\3aevaluation__start(evaluation__start)
 	evaluation\3atest_generator(test_generator)
-	evaluation\3astudent_test_beginner(student_test_beginner)
-	evaluation\3astudent_test_intermediate(student_test_intermediate)
-	evaluation\3astudent_test_advanced(student_test_advanced)
+	evaluation\3atest_taking(test_taking)
 	evaluation\3aanswer_grader(answer_grader)
 	evaluation\3aerror_analysis(error_analysis)
 	evaluation\3aobjective_achievement(objective_achievement)
@@ -128,12 +119,8 @@ graph TD;
 	evaluation\3aobjective_achievement --> evaluation\3aquality_evaluator;
 	evaluation\3aoptimizer --> evaluation\3afeedback_manager;
 	evaluation\3aquality_evaluator --> evaluation\3aoptimizer;
-	evaluation\3astudent_test_advanced --> evaluation\3aanswer_grader;
-	evaluation\3astudent_test_beginner --> evaluation\3aanswer_grader;
-	evaluation\3astudent_test_intermediate --> evaluation\3aanswer_grader;
-	evaluation\3atest_generator --> evaluation\3astudent_test_advanced;
-	evaluation\3atest_generator --> evaluation\3astudent_test_beginner;
-	evaluation\3atest_generator --> evaluation\3astudent_test_intermediate;
+	evaluation\3atest_generator --> evaluation\3atest_taking;
+	evaluation\3atest_taking --> evaluation\3aanswer_grader;
 	end
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0

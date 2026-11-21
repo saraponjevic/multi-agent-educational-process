@@ -19,6 +19,7 @@ import time
 import urllib.request
 from datetime import datetime
 
+from engine.events import emit
 from engine.registry import AgentSpec
 
 _print_lock = threading.Lock()
@@ -39,6 +40,8 @@ def build_inputs(spec: AgentSpec, state: dict) -> dict:
         "settings": state.get("settings", {}),
         "params": spec.params,
         "inputs": {dep: results.get(dep) for dep in spec.requires + spec.optional},
+        # sopstveni rezultat iz prethodnog poziva (bitno u PETLJI: nastavnik zna koji deo je vec predao)
+        "previous": results.get(spec.id),
     }
 
 
@@ -73,7 +76,8 @@ def make_agent_node(spec: AgentSpec, phase_name: str, kg=None):
 
     def node(state: dict) -> dict:
         iteration = state.get("iteration", 0)
-        log_key = f"iter{iteration}|{spec.phase}|{spec.step}|{spec.id}"
+        rnd = (state.get("rounds") or {}).get(spec.phase, 0)          # krug petlje unutar faze
+        log_key = f"iter{iteration}|{spec.phase}|{spec.step}|{spec.id}|r{rnd}"
 
         # Ako je neki raniji agent pukao (i stop_on_error je ukljucen), ne trosimo vise LLM poziva
         if state.get("abort"):
@@ -89,6 +93,8 @@ def make_agent_node(spec: AgentSpec, phase_name: str, kg=None):
             say(f"   [!] {spec.id}: nedostaju ulazi od {missing} (nastavljam bez njih)")
 
         say(f"   > pokrecem  {spec.id:<28} ({spec.type})")
+        emit("agent_start", agent=spec.id, name=spec.name, phase=spec.phase, step=spec.step,
+             iteration=iteration, round=rnd)
         start = time.perf_counter()
         graph_report = None
         try:
@@ -107,6 +113,8 @@ def make_agent_node(spec: AgentSpec, phase_name: str, kg=None):
         duration = round(time.perf_counter() - start, 3)
         mark = "OK " if status == "ok" else "GRESKA"
         say(f"   < {mark:<6}    {spec.id:<28} {duration}s" + (f"  -> {error}" if error else ""))
+        emit("agent_end", agent=spec.id, phase=spec.phase, status=status, error=error,
+             duration_s=duration, output=output, iteration=iteration, round=rnd)
 
         update = {
             "results": {spec.id: output},
@@ -116,6 +124,7 @@ def make_agent_node(spec: AgentSpec, phase_name: str, kg=None):
                     "phase": phase_name,
                     "step": spec.step,
                     "iteration": iteration,
+                    "round": rnd,
                     "status": status,
                     "error": error,
                     "duration_s": duration,

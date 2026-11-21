@@ -39,10 +39,12 @@
 
 # Sam sistem je takodje opisan u grafu (ko je koji agent i sta sme da upisuje)
 :Agent             a owl:Class ; rdfs:label "Agent" .
+:Aktivnost         a owl:Class ; rdfs:label "Aktivnost" ;
+                   rdfs:comment "Nije agent: postojeci ucenici rade nesto nad postojecim resursom (npr. polaganje testa)." .
 
 # Klase su medjusobno disjunktne (ishod ne moze istovremeno biti tema)
 [] a owl:AllDisjointClasses ;
-   owl:members ( :Kurs :Kompetencija :NastavniIshod :NastavnaJedinica :Tema :Materijal :Test :Pitanje :Ucenik :Odgovor :Agent ) .
+   owl:members ( :Kurs :Kompetencija :NastavniIshod :NastavnaJedinica :Tema :Materijal :Test :Pitanje :Ucenik :Odgovor :Agent :Aktivnost ) .
 
 # ---------------------------------------------------------------------
 #  OBJEKTNA SVOJSTVA (veze izmedju cvorova)
@@ -124,5 +126,6 @@
 :ciljnaGrupa       a owl:DatatypeProperty ; rdfs:domain :Kurs ; rdfs:range xsd:string .
 :verzija           a owl:DatatypeProperty ; rdfs:range xsd:integer ;
                    rdfs:comment "Prolaz kroz povratnu spregu u kome je cvor nastao." .
-:agentId           a owl:DatatypeProperty ; rdfs:domain :Agent ; rdfs:range xsd:string .
-:pripadaFazi       a owl:DatatypeProperty ; rdfs:domain :Agent ; rdfs:range xsd:string .
+:agentId           a owl:DatatypeProperty ; rdfs:range xsd:string ;
+                   rdfs:comment "Id agenta ili aktivnosti iz config/agents.yaml." .
+:pripadaFazi       a owl:DatatypeProperty ; rdfs:range xsd:string .

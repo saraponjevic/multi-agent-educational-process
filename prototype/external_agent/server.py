@@ -23,8 +23,9 @@ class AgentHandler(BaseHTTPRequestHandler):
         data = json.loads(self.rfile.read(length) or b"{}")
 
         grades = {}
-        for student_id, result in data.get("inputs", {}).items():
-            if not student_id.startswith("student_test_") or not result:
+        participants = (data.get("inputs", {}).get("test_taking") or {}).get("participants") or {}
+        for student_id, result in participants.items():
+            if not result:
                 continue
             answers = result.get("answers", [])
             avg_len = sum(len(a.get("answer", "")) for a in answers) / max(len(answers), 1)

@@ -125,9 +125,9 @@ class KnowledgeGraph:
         """Upisuje u graf: sve agente sa fazom (iz agents.yaml) i kurs (iz course.yaml)."""
         with self._lock:
             g = self.ds.graph(URIRef(GRAF + "sistem"))
-            for a in registry.agents.values():
+            for a in registry.nodes():                    # agenti + aktivnosti
                 uri = K["agent_" + a.id]
-                g.add((uri, RDF.type, K.Agent))
+                g.add((uri, RDF.type, K.Aktivnost if a.kind == "activity" else K.Agent))
                 g.add((uri, RDFS.label, Literal(a.name)))
                 g.add((uri, K.agentId, Literal(a.id)))
                 g.add((uri, K.pripadaFazi, Literal(a.phase)))

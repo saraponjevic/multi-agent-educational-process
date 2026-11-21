@@ -1,41 +1,52 @@
 """
 Agent za upravljanje stanjem znanja ucenika.
 
-STATUS: PRIMITIVNO, bez LLM-a. Procena znanja zavisi samo od profila ucenika
-(pocetnik 0.3, srednji 0.6, napredni 0.9). Ucenik "usvaja" teme redom kojim su
-predavane, onoliko njih koliko mu procena dozvoljava.
+STATUS: pravi agent (bez LLM-a). Vise NE nagadja znanje po profilu, nego cita
+STVARNO stanje iz memorije ucenika posle casa (izlaz aktivnosti 'learning'):
 
-Ucenike i teme cita iz GRAFA, a stanje znanja upisuje nazad u graf:
-    :Ucenik_beginner :nivoZnanja 0.3 ; :usvojioTemu :Tema_osnovni_pojmovi .
+    nivo znanja   = usvojeni delovi / svi delovi koje je cuo
+    usvojena tema = iz te jedinice je usvojio bar polovinu delova
 
-Kasnije: procena na osnovu odgovora na casu (LLM) i rezultata testa.
+Upis u graf:
+    :Ucenik_student_beginner :nivoZnanja 0.5 ; :usvojioTemu :Tema_osnovni_pojmovi .
 """
 from agents import graph_context
-from agents.common import hello
-
-ESTIMATE = {"beginner": 0.3, "intermediate": 0.6, "advanced": 0.9}
 
 
 def run(data: dict) -> dict:
+    learning = data["inputs"].get("learning") or {}
+    segments = (data["inputs"].get("teacher") or {}).get("segments", [])
     kg = data.get("kg")
-    if kg is None:
-        return hello(data, "agent za upravljanje stanjem znanja ucenika", knowledge=ESTIMATE)
+    topics = graph_context.topics(kg) if kg else []
 
-    topics = graph_context.topics(kg)
-    students = kg.query("SELECT ?u ?profil WHERE { ?u a :Ucenik ; :profil ?profil }")
+    units = {}
+    for s in segments:
+        units.setdefault(s.get("unit"), []).append(s.get("id"))
+
     state = {}
-    for s in students:
-        level = ESTIMATE.get(s["profil"], 0.5)
-        mastered = topics[: round(level * len(topics))]
-        state[s["profil"]] = {"estimate": level, "mastered_topics": [t["name"] for t in mastered]}
-    return hello(data, "agent za upravljanje stanjem znanja ucenika", knowledge=state)
+    for sid, st in (learning.get("participants") or {}).items():
+        if not st:
+            continue
+        learned = set(st.get("learned_ids", []))
+        mastered_units = [u for u, ids in units.items() if ids and len(learned & set(ids)) / len(ids) >= 0.5]
+        state[sid] = {
+            "estimate": st.get("ratio", 0.0),
+            "learned": st.get("learned", 0),
+            "heard": st.get("heard", 0),
+            "mastered_units": mastered_units,
+            "mastered_topics": [t["name"] for t in topics if t["unit"] in mastered_units],
+            "learned_concepts": st.get("learned_concepts", []),
+            "missed_concepts": st.get("missed_concepts", []),
+        }
+    return {"knowledge": state,
+            "message": "Stanje znanja procitano iz memorije simuliranih ucenika."}
 
 
 def write_graph(result: dict, g):
-    for profil, st in result.get("knowledge", {}).items():
+    for sid, st in result.get("knowledge", {}).items():
         if not isinstance(st, dict):
             continue
-        u = g.ref(f"Ucenik_{profil}")
+        u = g.ref(f"Ucenik_{sid}")
         g.value(u, "nivoZnanja", st["estimate"])
         for name in st["mastered_topics"]:
             g.link(u, "usvojioTemu", g.ref(f"Tema_{name}"))

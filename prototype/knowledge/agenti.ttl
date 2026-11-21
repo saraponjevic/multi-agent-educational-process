@@ -34,18 +34,16 @@
 :agent_exercise_generator          :kreira :Zadatak .
 
 # ---------------- Faza 3 - Realizacija nastave --------------
-# Ucenici na casu "postaju" cvorovi grafa (isti cvor koristi i Faza 4)
-:agent_student_beginner            :kreira :Ucenik .
-:agent_student_intermediate        :kreira :Ucenik .
-:agent_student_advanced            :kreira :Ucenik .
+# AKTIVNOST 'learning': ucenici na casu "postaju" cvorovi grafa (isti cvor koristi i Faza 4)
+#  (aktivnosti imaju ista pravila upisa kao agenti; ime je  :agent_<id aktivnosti>)
+:agent_learning                    :kreira :Ucenik .
 
 :agent_knowledge_state             :dopunjuje :nivoZnanja , :usvojioTemu .
 
 # ---------------- Faza 4 - Evaluacija -----------------------
 :agent_test_generator              :kreira :Test , :Pitanje .
 
-:agent_student_test_beginner       :kreira :Odgovor .
-:agent_student_test_intermediate   :kreira :Odgovor .
-:agent_student_test_advanced       :kreira :Odgovor .
+# AKTIVNOST 'test_taking': odgovori ucenika na testu
+:agent_test_taking                 :kreira :Odgovor .
 
 :agent_answer_grader               :dopunjuje :poeni , :obrazlozenje .

@@ -15,6 +15,14 @@
 #    - unutar faze agenti idu po "step" (1, 2, 3 ...)
 #    - agenti sa ISTIM "step" brojem u istoj fazi rade PARALELNO
 #    - korak N+1 čeka da se završe SVI agenti iz koraka N
+#    - PETLJA (loop kod faze): koraci od from_step do to_step se ponavljaju
+#      dok rezultat agenta iz 'until' nema to polje = true (npr. teacher.done)
+#
+#  TRI VRSTE STVARI U OVOM FAJLU:
+#    agents      - agenti (svaki je jedan fajl sa run(data))
+#    students    - simulirani ucenici (klasa koja ispunjava agents/students/base.py)
+#    activities  - AKTIVNOSTI: nisu novi agenti, nego postojeci ucenici rade nesto
+#                  nad postojecim resursom (slusaju deo lekcije, rade test)
 # =====================================================================
 
 settings:
@@ -30,6 +38,9 @@ phases:
     name: "Faza 2 - Kreiranje nastavnih sadrzaja"
   - id: teaching
     name: "Faza 3 - Realizacija nastave"
+    # PETLJA: nastavnik (korak 3) preda deo lekcije -> ucenici ga usvajaju (korak 4)
+    #         -> ponovo nastavnik ... dok nastavnik ne preda sve (teacher.done = true)
+    loop: {from_step: 3, to_step: 4, until: "teacher.done", max_rounds: 40}
   - id: evaluation
     name: "Faza 4 - Evaluacija i unapredjenje"
 
@@ -139,6 +150,7 @@ agents:
     type: local
     function: "agents.phase2_content.example_generator"
     requires: [lesson_generator, learning_outcomes]
+    optional: [curriculum_structure]
 
   - id: exercise_generator   # KLJUCNI (LLM)
     name: "Agent za generisanje zadataka"
@@ -147,8 +159,9 @@ agents:
     type: local
     function: "agents.phase2_content.exercise_generator"
     requires: [learning_outcomes, lesson_generator]
+    optional: [optimizer]       # u doradi: primedbe (npr. zadatak bez podataka)
 
-  - id: exercise_solver
+  - id: exercise_solver   # KLJUCNI (LLM) - nezavisno resava zadatke i proverava autora
     name: "Agent za resavanje zadataka"
     phase: content_creation
     step: 3
@@ -163,6 +176,7 @@ agents:
     type: local
     function: "agents.phase2_content.material_quality_check"
     requires: [lesson_generator, example_generator, exercise_generator, exercise_solver, activity_planning]
+    optional: [learning_outcomes]
 
   - id: formatting_export
     name: "Agent za formatiranje i eksport"
@@ -183,7 +197,7 @@ agents:
     requires: [formatting_export, curriculum_structure]
 
 
-  # ---------------- Faza 3 - Realizacija nastave (8 agenata; ucenik ima 3 instance) ----------------
+  # ---------------- Faza 3 - Realizacija nastave (petlja: nastavnik <-> aktivnost ucenja) ----------------
   - id: teaching_scenario
     name: "Agent za pripremu nastavnog scenarija"
     phase: teaching
@@ -200,7 +214,7 @@ agents:
     function: "agents.phase3_teaching.classroom_controller"
     requires: [teaching_scenario]
 
-  - id: teacher   # KLJUCNI (LLM)
+  - id: teacher   # KLJUCNI (LLM) - jedan poziv modela, pa u svakom krugu petlje preda sledeci deo
     name: "Agent nastavnik (Teaching Agent)"
     phase: teaching
     step: 3
@@ -208,32 +222,7 @@ agents:
     function: "agents.phase3_teaching.teacher"
     requires: [teaching_scenario, lesson_generator, classroom_controller]
 
-  - id: student_beginner   # KLJUCNI (LLM)
-    name: "Agent ucenik - pocetni nivo (na casu)"
-    phase: teaching
-    step: 4
-    type: local
-    function: "agents.phase3_teaching.student"
-    requires: [teacher]
-    params: {level: beginner, mode: class}
-
-  - id: student_intermediate   # KLJUCNI (LLM)
-    name: "Agent ucenik - srednji nivo (na casu)"
-    phase: teaching
-    step: 4
-    type: local
-    function: "agents.phase3_teaching.student"
-    requires: [teacher]
-    params: {level: intermediate, mode: class}
-
-  - id: student_advanced   # KLJUCNI (LLM)
-    name: "Agent ucenik - napredni nivo (na casu)"
-    phase: teaching
-    step: 4
-    type: local
-    function: "agents.phase3_teaching.student"
-    requires: [teacher]
-    params: {level: advanced, mode: class}
+  # korak 4 = AKTIVNOST "learning" (definisana dole u sekciji activities)
 
   - id: knowledge_state
     name: "Agent za upravljanje stanjem znanja ucenika"
@@ -241,7 +230,7 @@ agents:
     step: 5
     type: local
     function: "agents.phase3_teaching.knowledge_state"
-    requires: [student_beginner, student_intermediate, student_advanced]
+    requires: [learning, teacher]
 
   - id: activity_tracking
     name: "Agent za pracenje nastavnih aktivnosti"
@@ -249,7 +238,7 @@ agents:
     step: 5
     type: local
     function: "agents.phase3_teaching.activity_tracking"
-    requires: [teacher, student_beginner, student_intermediate, student_advanced]
+    requires: [teacher, learning]
 
   - id: material_accuracy_check
     name: "Agent za proveru tacnosti materijala"
@@ -268,7 +257,7 @@ agents:
     requires: [activity_tracking, knowledge_state, material_accuracy_check]
 
 
-  # ---------------- Faza 4 - Evaluacija i unapredjenje (10 agenata + ucenici rade test) ----------------
+  # ---------------- Faza 4 - Evaluacija i unapredjenje (10 agenata + aktivnost polaganja testa) ----------------
   - id: test_generator   # KLJUCNI (LLM)
     name: "Agent za generisanje testova"
     phase: evaluation
@@ -277,32 +266,7 @@ agents:
     function: "agents.phase4_evaluation.test_generator"
     requires: [learning_outcomes, curriculum_structure, lesson_generator]
 
-  - id: student_test_beginner   # KLJUCNI (LLM)
-    name: "Agent ucenik - pocetni nivo (radi test)"
-    phase: evaluation
-    step: 2
-    type: local
-    function: "agents.phase3_teaching.student"
-    requires: [test_generator, teacher]
-    params: {level: beginner, mode: test}
-
-  - id: student_test_intermediate   # KLJUCNI (LLM)
-    name: "Agent ucenik - srednji nivo (radi test)"
-    phase: evaluation
-    step: 2
-    type: local
-    function: "agents.phase3_teaching.student"
-    requires: [test_generator, teacher]
-    params: {level: intermediate, mode: test}
-
-  - id: student_test_advanced   # KLJUCNI (LLM)
-    name: "Agent ucenik - napredni nivo (radi test)"
-    phase: evaluation
-    step: 2
-    type: local
-    function: "agents.phase3_teaching.student"
-    requires: [test_generator, teacher]
-    params: {level: advanced, mode: test}
+  # korak 2 = AKTIVNOST "test_taking" (ucenici rade test; definisana dole u sekciji activities)
 
   # EKSTERNI AGENT: da bi ovaj agent radio preko HTTP API-ja,
   # pokreni  python external_agent/server.py  i promeni  type: local  ->  type: remote_http
@@ -312,7 +276,7 @@ agents:
     step: 3
     type: local
     function: "agents.phase4_evaluation.answer_grader"
-    requires: [test_generator, student_test_beginner, student_test_intermediate, student_test_advanced]
+    requires: [test_generator, test_taking]
     endpoint: "http://127.0.0.1:8001/run"   # koristi se samo kad je type: remote_http
     timeout_seconds: 60
 
@@ -363,6 +327,7 @@ agents:
     type: local
     function: "agents.phase4_evaluation.optimizer"
     requires: [quality_evaluator, answer_grader, error_analysis, curriculum_evaluation, adaptive_adjustment]
+    optional: [material_quality_check]
 
   - id: feedback_manager
     name: "Agent za upravljanje povratnom spregom"
@@ -381,5 +346,57 @@ agents:
     function: "agents.phase4_evaluation.final_report"
     requires: [feedback_manager, answer_grader, quality_evaluator]
     # sadrzaj za test.md i izvestaj.md
-    optional: [test_generator, teacher, student_beginner, student_intermediate, student_advanced, student_test_beginner, student_test_intermediate, student_test_advanced]
+    optional: [test_generator, teacher, knowledge_state, test_taking]
 
+
+# =====================================================================
+#  SIMULIRANI UCENICI  (genericki interfejs: agents/students/base.py)
+# ---------------------------------------------------------------------
+#  'class' = koja implementacija ucenika se koristi. Nasa je gruba
+#  (random usvajanje). Drugi simulirani ucenik se ukljucuje
+#  tako sto se ovde promeni 'class' - nista drugo se ne menja.
+#  Profil (opis, predznanje, verovatnoca usvajanja) je u config/course.yaml.
+# =====================================================================
+students:
+  - id: student_beginner
+    name: "Simulirani ucenik - pocetni nivo"
+    class: "agents.students.simple_student:SimpleStudent"
+    params: {level: beginner}
+
+  - id: student_intermediate
+    name: "Simulirani ucenik - srednji nivo"
+    class: "agents.students.simple_student:SimpleStudent"
+    params: {level: intermediate}
+
+  - id: student_advanced
+    name: "Simulirani ucenik - napredni nivo"
+    class: "agents.students.simple_student:SimpleStudent"
+    params: {level: advanced}
+
+
+# =====================================================================
+#  AKTIVNOSTI  (engine/activities.py)
+# ---------------------------------------------------------------------
+#  Aktivnost je cvor u LangGraph grafu, ali NIJE novi agent:
+#    action        - sta se radi (learn | take_test)
+#    participants  - KO to radi (ucenici iz sekcije students)
+#    resource      - NAD CIM (izlaz kog agenta)
+#  Rezultat aktivnosti se upisuje pod njenim id-jem, pa ga sledeci agent
+#  dobija kao obican ulaz (requires: [test_taking]).
+# =====================================================================
+activities:
+  - id: learning
+    name: "Aktivnost: ucenici usvajaju deo lekcije"
+    phase: teaching
+    step: 4
+    action: learn
+    participants: [student_beginner, student_intermediate, student_advanced]
+    resource: teacher
+
+  - id: test_taking
+    name: "Aktivnost: polaganje testa"
+    phase: evaluation
+    step: 2
+    action: take_test
+    participants: [student_beginner, student_intermediate, student_advanced]
+    resource: test_generator

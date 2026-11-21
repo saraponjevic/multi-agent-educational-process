@@ -11,6 +11,9 @@ Agent NE pise fajlove na disk (da bi mogao da radi i kao eksterni HTTP agent).
 Fajlove iz polja "files" na kraju upisuje main.py u  output/materijali_<vreme>/.
 """
 
+TYPE_NAMES = {"pojmovni": "pojmovni", "racunski": "računski", "programski": "programski",
+              "analiza_greske": "pronađi grešku"}
+
 
 def run(data: dict) -> dict:
     inp = data["inputs"]
@@ -36,6 +39,10 @@ def curriculum_md(course, outcomes, units) -> str:
     lines = [f"# Kurikulum: {course.get('topic', '')}", ""]
     if course.get("target_group"):
         lines += [f"**Ciljna grupa:** {course['target_group']}", ""]
+    if course.get("case_study"):
+        lines += [f"**Studija slučaja:** {str(course['case_study']).strip()}", ""]
+    if course.get("constraints"):
+        lines += ["**Ograničenja:**", ""] + [f"- {c}" for c in course["constraints"]] + [""]
     lines += ["## Nastavni ishodi", "", "| ID | Ishod | Nivo | Pokazatelj ostvarenosti |", "|---|---|---|---|"]
     for o in outcomes:
         lines.append(f"| {o.get('id', '')} | {_cell(o.get('text'))} | {_cell(o.get('level'))} "
@@ -54,28 +61,53 @@ def curriculum_md(course, outcomes, units) -> str:
 def lessons_md(course, lessons, examples) -> str:
     lines = [f"# Lekcije: {course.get('topic', '')}", ""]
     for les in lessons:
-        lines += [f"## {les.get('unit', '')}. {les.get('title', '')}", "", str(les.get("text", "")), ""]
+        lines += [f"## {les.get('unit', '')}. {les.get('title', '')}", ""]
+        sections = [s for s in les.get("sections", []) if isinstance(s, dict)]
+        if sections:
+            for s in sections:
+                lines += [f"### {s.get('title') or s.get('type', '')}", "", str(s.get("content", "")), ""]
+        else:
+            lines += [str(les.get("text", "")), ""]
     if examples:
-        lines += ["## Primeri", ""] + [f"- {_text(e)}" for e in examples] + [""]
+        lines += ["## Zbirka rešenih primera", ""]
+        for e in examples:
+            if not isinstance(e, dict):
+                lines += [f"- {e}", ""]
+                continue
+            meta = f"jedinica {e.get('unit')}" + (f", ishodi {', '.join(e['outcomes'])}" if e.get("outcomes") else "")
+            lines += [f"### {e.get('id', '')}. {e.get('title', '')} ({meta})", "", str(e.get("worked_solution", "")), ""]
+            if e.get("code"):
+                lines += [str(e["code"]), ""]
     return "\n".join(lines)
 
 
 def exercises_md(course, exercises, solutions) -> str:
     lines = [f"# Zadaci: {course.get('topic', '')}", ""]
     for ex in exercises:
-        meta = ", ".join(str(x) for x in (f"jedinica {ex.get('unit')}" if ex.get("unit") else None,
-                                          ex.get("difficulty"), ex.get("outcome")) if x)
+        meta = ", ".join(str(x) for x in (
+            f"jedinica {ex.get('unit')}" if ex.get("unit") else None,
+            TYPE_NAMES.get(ex.get("type"), ex.get("type")), ex.get("difficulty"),
+            f"ishod {ex.get('outcome')}" if ex.get("outcome") else None) if x)
         lines += [f"### {ex.get('id', '')}" + (f" ({meta})" if meta else ""), "", str(ex.get("text", "")), ""]
-        sol = solutions.get(ex.get("id")) if isinstance(solutions, dict) else None
-        if sol:
-            lines += [f"> **Resenje:** {_text(sol)}", ""]
+        if str(ex.get("data") or "").strip():
+            lines += ["**Podaci:**", "", str(ex["data"]), ""]
+    lines += ["---", "", "## Rešenja", ""]
+    for ex in exercises:
+        lines += [f"### {ex.get('id', '')}", ""]
+        if ex.get("solution"):
+            lines += [str(ex["solution"]), ""]
+        if ex.get("answer"):
+            lines += [f"**Odgovor:** {ex['answer']}", ""]
+        check = solutions.get(ex.get("id")) if isinstance(solutions, dict) else None
+        if isinstance(check, dict):
+            if check.get("matches_author") is False:
+                lines += [f"> ⚠ **Rešavač se ne slaže:** {check.get('note', '')} "
+                          f"(njegov odgovor: {check.get('answer', '')})", ""]
+            elif check.get("matches_author"):
+                lines += ["> ✓ Nezavisni rešavač je dobio isti odgovor.", ""]
+        elif check:
+            lines += [f"> **Rešenje:** {check}", ""]
     return "\n".join(lines)
-
-
-def _text(x) -> str:
-    if isinstance(x, dict):
-        return x.get("text") or x.get("solution") or str(x)
-    return str(x)
 
 
 def _cell(x) -> str:

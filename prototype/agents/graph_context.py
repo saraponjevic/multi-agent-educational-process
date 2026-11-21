@@ -47,7 +47,7 @@ def lessons(kg) -> list:
         } GROUP BY ?rb ?naslov ?tekst ORDER BY ?rb""")
     return [{"unit": r["rb"], "title": r["naslov"], "text": r["tekst"],
              "topics": [t for t in (r["teme"] or "").split("; ") if t],
-             "outcomes": [_id(i, "http://example.org/kurikulum#Ishod_") for i in (r["ishodi"] or "").split()]}
+             "outcomes": [i.rsplit("#Ishod_", 1)[-1] for i in (r["ishodi"] or "").split()]}
             for r in rows]
 
 
@@ -65,15 +65,14 @@ def questions(kg) -> list:
 
 
 def test_answers(kg) -> dict:
-    """Odgovori ucenika na testu: {'student_test_beginner': [{'question_id': 'T1', 'answer': '...'}]}"""
+    """Odgovori ucenika na testu: {'student_beginner': [{'question_id': 'T1', 'answer': '...'}]}"""
     rows = kg.query("""
-        SELECT ?profil ?p ?tekst WHERE {
+        SELECT ?u ?p ?tekst WHERE {
           ?o a :Odgovor ; :odUcenika ?u ; :naPitanje ?p ; :tekst ?tekst .
-          ?u :profil ?profil .
-        } ORDER BY ?profil ?p""")
+        } ORDER BY ?u ?p""")
     result = {}
     for r in rows:
-        result.setdefault(f"student_test_{r['profil']}", []).append(
+        result.setdefault(_id(r["u"], "Ucenik_"), []).append(
             {"question_id": _id(r["p"], "Pitanje_"), "answer": r["tekst"]})
     return result
 

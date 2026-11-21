@@ -9,6 +9,7 @@ ISKLJUCIVO na onome sto je predavano u lekcijama (inace test kaznjava ucenike
 za gradivo koje nisu ni ucili).
 """
 from agents import graph_context
+from agents.common import course_context, lessons_brief
 from engine.llm import ask_json, to_text
 
 SYSTEM = (
@@ -33,10 +34,14 @@ Nastavni ishodi:
 {to_text(outcomes)}
 Nastavni plan:
 {to_text(units)}
-Lekcije koje su ucenici slusali (jedini izvor gradiva):
-{to_text(lessons)}
+Lekcije koje su ucenici slusali - bitni delovi (jedini izvor gradiva):
+{to_text(lessons_brief(lessons, (data["inputs"].get("lesson_generator") or {}).get("lessons")))}
+
+{course_context(course)}
 
 Napravi test sa jednim pitanjem otvorenog tipa za SVAKI ishod (kratak odgovor, 1-3 recenice).
+Bar jedno pitanje neka bude PRIMENJENO: mali konkretan slucaj iz studije slucaja (brojevi ili kratka tabela u tekstu pitanja)
+na kome ucenik nesto izracuna ili odluci; ocekivani odgovor tada sadrzi tacan rezultat.
 Za svako pitanje navedi ocekivani tacan odgovor koji se zasniva SAMO na lekcijama iznad
 (isti pojmovi, iste formule, isti nacin implementacije - ne uvodi biblioteke ili metode koje nisu predavane).
 Pisi na jeziku: {course['language']}.

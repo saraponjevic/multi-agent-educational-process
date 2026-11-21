@@ -14,14 +14,45 @@ language: "srpski jezik, latinica"
 num_units: 2                      # koliko nastavnih jedinica / casova
 requirements: "kratak uvodni kurs; akcenat na razumevanju pojma i jednom prakticnom primeru"
 
-# Profili simuliranih ucenika (Agent ucenik ih koristi da bi "glumio" taj nivo)
+# STUDIJA SLUCAJA - jedan primer koji se provlaci kroz SVE lekcije, zadatke i test
+# (tako kurs lici na pravi kurs, a ne na niz nepovezanih definicija).
+# Opciono: ako se izbaci, agenti sami izaberu primer za datu temu.
+case_study: >
+  Klasifikacija e-poruka na "spam" i "nije spam". Mali skup od 10 poruka; svaka poruka
+  je opisana sa 3 obelezja: broj linkova, da li sadrzi rec "besplatno" (da/ne) i duzina poruke
+  (broj reci). Model: stablo odlucivanja i k-najblizih suseda (k-NN).
+
+# OGRANICENJA - sta lekcija sme / ne sme (da bude izvodljivo na dva casa)
+constraints:
+  - "dva casa po 45 minuta"
+  - "bez izvodjenja formula; formule samo za tacnost, preciznost i odziv"
+  - "kod u Python-u sa bibliotekom scikit-learn, najvise 15 linija po primeru"
+  - "svaki racunski zadatak ima male brojeve koji se mogu izracunati rucno"
+
+# "Kockica" za simulirane ucenike: isti broj = isti rezultati svaki put (ponovljivo).
+# Stavi  random_seed: null  ako zelis da svako pokretanje bude drugacije.
+random_seed: 42
+
+# Profili simuliranih ucenika (agents/students/simple_student.py)
+#   description           - ko je ucenik (LLM ga "glumi" na testu)
+#   prior_knowledge       - sta zna PRE casa (pocetna memorija)
+#   learning_probability  - sansa da usvoji jedan deo lekcije koji nastavnik isporuci (0-1)
 student_profiles:
-  beginner: >
-    Pocetnik. Zna osnove programiranja, ali nikad nije radio masinsko ucenje.
-    Cesto brka klasifikaciju i regresiju, nesiguran je i daje kratke, delimicno netacne odgovore.
-  intermediate: >
-    Srednji nivo. Cuo je za masinsko ucenje i razume osnovnu ideju,
-    ali greska u detaljima (npr. podela na trening i test skup, metrike).
-  advanced: >
-    Napredni. Vec je samostalno trenirao jednostavne modele.
-    Odgovara tacno i precizno, ponekad postavlja dublja pitanja.
+  beginner:
+    description: >
+      Pocetnik. Zna osnove programiranja, ali nikad nije radio masinsko ucenje.
+      Nesiguran je i daje kratke, delimicno netacne odgovore.
+    prior_knowledge: ["osnove programiranja u Python-u"]
+    learning_probability: 0.45
+  intermediate:
+    description: >
+      Srednji nivo. Cuo je za masinsko ucenje i razume osnovnu ideju,
+      ali greska u detaljima (npr. podela na trening i test skup, metrike).
+    prior_knowledge: ["osnove programiranja u Python-u", "osnovna ideja masinskog ucenja"]
+    learning_probability: 0.7
+  advanced:
+    description: >
+      Napredni. Vec je samostalno trenirao jednostavne modele.
+      Odgovara tacno i precizno.
+    prior_knowledge: ["Python", "biblioteka scikit-learn", "trening i test skup"]
+    learning_probability: 0.9
