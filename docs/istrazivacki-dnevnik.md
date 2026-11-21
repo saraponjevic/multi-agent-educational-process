@@ -59,9 +59,31 @@ Detaljnije istraživanje **arhitektura multiagentskih sistema**, kao i identifik
 - Ključni agenti po fazama povezani sa jezičkim modelom (Groq, `gpt-oss-120b`): nastavni ishodi i nastavni plan, lekcije i zadaci, nastavnik i tri simulirana učenika, test i ocenjivanje.
 
 **15.11.2026. – Eksport nastavnih materijala**
-
 - Agent za formatiranje i eksport (faza 2) više nije hello world. Od rezultata drugih agenata pravi kurikulum.md, lekcije.md i zadaci.md (bez LLM-a).
 - Agent za generisanje završnog izveštaja (faza 4) više nije hello world. Pravi test.md (pitanja i ključ) i izvestaj.md (tok časa, ocene i odgovori učenika, odluka povratne sprege).
 - Materijali se posle svakog pokretanja čuvaju u output/materijali_<vreme>/, pored JSON evidencije.
+
+---
+
+## Nedelja 5
+
+**Period:** 18.11.2026 – 24.11.2026.
+
+### Realizovane aktivnosti
+
+**19.11.2026. – Realizacija sugestija profesora**
+
+- Engine je proširen mogućnošću sekvencioniranja agenata unutar faze: pored redosleda po koracima i paralelnog izvršavanja, faza može imati **petlju** (LangGraph uslovna ivica) koja ponavlja korake dok se ne ispuni uslov.
+- Uveden je pojam **aktivnosti**, čvora u grafu koji nije novi agent, već radnja postojećih agenata nad postojećim resursom. Polaganje testa je modelovano kao aktivnost u kojoj simulirani učenici rade test, a njihovi odgovori se prosleđuju agentu za ocenjivanje.
+- Realizovana je **faza podučavanja**: nastavnik deli lekciju na delove i isporučuje ih učenicima jedan po jedan.
+- Simulirani učenik je modelovan kao **generički interfejs** sa memorijom znanja (početno predznanje + usvojeno na času) i operacijama za prijem novog znanja i rešavanje testa. Implementirana je grubo simulirana verzija u kojoj učenik deo lekcije usvaja sa verovatnoćom koja zavisi od nivoa, pa rezultat na testu zavisi od onoga što je zaista naučio.
+
+**20.11.2026. – Razrada nastavnih materijala na primeru mašinskog učenja + vizualizacija simulacije**
+
+- Za kurs iz klasifikacije definisani su **studija slučaja** (klasifikacija e-poruka na spam / nije spam) i **ograničenja** kursa, koje koriste svi agenti.
+- Lekcije su strukturirane kao prave lekcije: uvod, objašnjenje, rešen primer korak po korak, kod, česte greške, rezime i pitanja za proveru.
+- Zadaci su različitih vrsta (pojmovni, računski, programski, pronalaženje greške), sa konkretnim podacima i rešenjima. Uvedena je nezavisna provera zadataka i provera kvaliteta materijala po pravilima.
+- Razvijena je veb aplikacija za vizualizaciju simulacije (backend **FastAPI**, frontend **React**). Korisnik zadaje temu kursa, a aplikacija prikazuje trenutnu fazu, rad agenata i aktivnosti, isporuku delova lekcije učenicima i artefakte koje su agenti napravili.
+- Svako pokretanje se čuva i može se kasnije reprodukovati.
 
 ---
