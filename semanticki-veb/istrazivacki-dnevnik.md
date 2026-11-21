@@ -34,3 +34,29 @@
 - Graf sam vizualizovala (HTML prikaz, Mermaid) i proverila u Protégé-u.
 
 ---
+
+## Nedelja 3
+
+**Period:** 16.11.2026 – 22.11.2026.
+
+### Realizovane aktivnosti
+
+**16.11.2026. – Termin sa asistentom**
+
+- Dobila sam pitanja o ulozi grafa: šta je izlaz sistema, da li se graf koristi kao ulaz u sledeću fazu, za šta će služiti i kako voditi računa o ograničenjima LLM modela.
+- Zadatak: osmisliti upotrebu grafa koja ima jasnu svrhu, a ne ubacivati ga na silu.
+
+**19.11.2026. – Usklađivanje grafa sa novom arhitekturom sistema**
+
+- U ontologiju sam dodala klasu **Aktivnost**. Aktivnosti (učenje na času, polaganje testa) nisu agenti, nego radnje postojećih agenata, i sada su opisane u grafu.
+- Pravila za upis u graf (`agenti.ttl`) sam prebacila sa posebnih agenata-učenika na aktivnosti, koje sada upisuju učenike i njihove odgovore na testu.
+- Proverila sam da svi upisi u graf prolaze proveru prema ontologiji i pravilima: nijedan upis nije odbijen.
+
+**20.11.2026. – Analiza uloge grafa i ideje za dalji rad**
+
+- Analizirala sam kako se graf trenutno koristi: kao **ulaz za agente** (8 agenata čita strukturu SPARQL upitima umesto teksta), za **kontrolu kvaliteta i povratnu spregu** (8 SPARQL pravila) i za **sledljivost** (svaki agent piše u svoj imenovani graf).
+- Uočila sam da faza 3 u grafu nije dovoljno detaljna: nema delova časa, ni koji je učenik usvojio koji deo.
+- Predložila sam načine da graf ima stvarnu svrhu: preduslovi koji utiču na učenje simuliranog učenika, ciljana dorada slabo ostvarenih ishoda, objašnjenje rezultata testa iz grafa, kao i RAG graf nad uzorcima materijala.
+- Analizirala sam ograničenja LLM modela: od oko 36 agenata model koristi samo desetak, a dostignut je limit tokena besplatnog nivoa. Graf tu pomaže jer agentu može da se da samo deo strukture koji mu treba.
+- Napravila sam fajl `beleske-i-ideje.md` za zaključke, ideje i sugestije asistenta na jednom mestu.
+
