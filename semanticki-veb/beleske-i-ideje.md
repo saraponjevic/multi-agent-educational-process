@@ -122,12 +122,12 @@ Upisati koji je deo časa učenik usvojio. Jedan SPARQL upit tada odgovara:
 ### D) Različit model za različite agente
 Jači model za lekcije i nastavnika, slabiji i jeftiniji za jednostavne zadatke. Graf daje kratak, ciljan ulaz.
 
-### E) RAG graf nad uzorcima materijala *(sugestija asistenta, termin 2)*
+### E) RAG graf nad uzorcima materijala
 Uzorci pravih nastavnih materijala (npr. postojeće lekcije, zadaci) predstavljeni kao poseban graf.
 Agenti za lekcije i zadatke iz njega uzimaju relevantne delove (RAG) umesto da sve izmišljaju sami.
 Pitanje: da li ga koriste svi agenti ili samo oni iz faze 2?
 
-### F) Claude Haiku preko pretplate *(sugestija asistenta, termin 3)*
+### F) Claude Haiku preko pretplate
 Ako besplatni nivo (Groq) ne bude dovoljan: Claude pretplata i mala skripta koja poziva model kroz sesiju,
 umesto plaćanja API-ja po pozivu. Haiku je jači od trenutnog modela, a troši malo sesije.
 U kodu bi se menjao samo `engine/llm.py`.
