@@ -105,7 +105,7 @@ Dodatno:
 
 ---
 
-## 3. Ideje – kako graf da ima svrhu, a ne da bude na silu
+## 3. Ideje – kako graf da ima svrhu
 
 ### A) Preduslovi utiču na učenje
 Graf već ima veze „tema B ima preduslov temu A“. Ako učenik nije usvojio A, teže usvaja B (manja verovatnoća).
