@@ -71,11 +71,11 @@ Detaljnije istraživanje **arhitektura multiagentskih sistema**, kao i identifik
 
 ### Realizovane aktivnosti
 
-**19.11.2026. – Realizacija sugestija profesora**
+**19.11.2026. – Nova implementacija realizacije nastave - dodate aktivnosti, faza poducavanja, unapredjenje ucenika**
 
-- Engine je proširen mogućnošću sekvencioniranja agenata unutar faze: pored redosleda po koracima i paralelnog izvršavanja, faza može imati **petlju** (LangGraph uslovna ivica) koja ponavlja korake dok se ne ispuni uslov.
 - Uveden je pojam **aktivnosti**, čvora u grafu koji nije novi agent, već radnja postojećih agenata nad postojećim resursom. Polaganje testa je modelovano kao aktivnost u kojoj simulirani učenici rade test, a njihovi odgovori se prosleđuju agentu za ocenjivanje.
 - Realizovana je **faza podučavanja**: nastavnik deli lekciju na delove i isporučuje ih učenicima jedan po jedan.
+- Engine je proširen mogućnošću sekvencioniranja agenata unutar faze: pored redosleda po koracima i paralelnog izvršavanja, faza može imati **petlju** (LangGraph uslovna ivica) koja ponavlja korake dok se ne ispuni uslov.
 - Simulirani učenik je modelovan kao **generički interfejs** sa memorijom znanja (početno predznanje + usvojeno na času) i operacijama za prijem novog znanja i rešavanje testa. Implementirana je grubo simulirana verzija u kojoj učenik deo lekcije usvaja sa verovatnoćom koja zavisi od nivoa, pa rezultat na testu zavisi od onoga što je zaista naučio.
 
 **20.11.2026. – Razrada nastavnih materijala na primeru mašinskog učenja + vizualizacija simulacije**
